@@ -1,0 +1,543 @@
+/* Curio board view, ported from the v0.7.4 preview and namespaced
+   under .curio so it never leaks into the rest of Nextcloud. */
+
+#curio-root { flex: 1 1 auto; width: 100%; min-width: 0; height: 100%; }
+
+.curio {
+	--primary: var(--color-primary-element, var(--color-primary, #0069c2)); --primary-soft: var(--color-primary-element-light, #e6f0fb); --bg: #f5f6f8; --surface: #fff; --surface-2: #f0f2f5;
+	--text: #1a1a1a; --text-soft: #5c6470; --border: #e2e5ea;
+	--shadow: 0 1px 2px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05); --shadow-lg: 0 8px 30px rgba(0,0,0,.18);
+	--sidebar-w: 290px;
+	position: relative; display: flex; height: 100%; overflow: hidden;
+	background: var(--bg); color: var(--text);
+	font-size: 14px; -webkit-font-smoothing: antialiased;
+}
+.curio[data-rbtheme="dark"] {
+	--primary-soft: var(--color-primary-element-light, #16283c); --bg: #121417; --surface: #1c1f24; --surface-2: #24282e;
+	--text: #eceef1; --text-soft: #9aa3af; --border: #2c313a; --shadow: 0 1px 2px rgba(0,0,0,.4); --shadow-lg: 0 8px 30px rgba(0,0,0,.5);
+}
+.curio * { box-sizing: border-box; }
+/* Neutralize Nextcloud's global <button> chrome (min-height, padding, border, focus ring)
+   once, scoped to the app; each component restyles its own buttons on top of this. */
+.curio button {
+	appearance: none; -webkit-appearance: none;
+	margin: 0 !important; padding: 0; border: none; background: none;
+	font: inherit; color: inherit; min-height: 0; min-width: 0;
+	border-radius: 0; box-shadow: none; cursor: pointer; text-align: inherit; line-height: normal;
+}
+.curio button:hover { background: none; }
+.curio button:focus, .curio button:focus-visible, .curio button:active { outline: none !important; box-shadow: none !important; }
+.curio .ic { vertical-align: -.15em; flex: 0 0 auto; }
+
+.curio .sidebar { width: var(--sidebar-w); flex: 0 0 var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: margin-left .2s ease; }
+.curio.nav-hidden .sidebar { margin-left: calc(-1 * var(--sidebar-w)); }
+.curio .side-fixed { flex: 0 0 auto; padding: 12px 12px 6px; }
+.curio .side-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 12px 20px; }
+.curio .side-footer { border-top: 1px solid var(--border); padding: 8px 10px; }
+.curio .side-footer button { width: 100%; display: flex; align-items: center; gap: 10px; background: none; border: none; padding: 9px 8px; border-radius: 8px; color: var(--text); font-size: 13.5px; }
+.curio .side-footer button:hover { background: var(--surface-2); }
+.curio .main { flex: 1; overflow-y: auto; position: relative; display: flex; flex-direction: column; }
+
+.curio .side-handle { position: absolute; top: 50%; left: calc(var(--sidebar-w) + 3px); transform: translateY(-50%); z-index: 30; width: 22px; height: 46px; border: none; background: transparent; color: var(--text-soft); border-radius: 7px; display: grid; place-items: center; transition: left .2s ease, background .12s, color .12s; padding: 0; }
+.curio .side-handle:hover { background: var(--surface-2); color: var(--primary); }
+.curio .side-handle svg { transition: transform .2s ease; }
+.curio:not(.nav-hidden) .side-handle svg { transform: rotate(180deg); }
+.curio.nav-hidden .side-handle { left: 3px; }
+
+.curio .side-top { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+.curio .searchwrap { position: relative; flex: 1; }
+.curio .searchwrap input { width: 100%; padding: 9px 58px 9px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); color: var(--text); font-size: 13.5px; }
+.curio .searchwrap .sx { position: absolute; right: 32px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-soft); display: none; }
+.curio .searchwrap.has .sx { display: block; }
+.curio .searchwrap .si { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); color: var(--text-soft); pointer-events: none; }
+
+.curio .addbtn { width: 100%; border-radius: 8px; padding: 11px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
+.curio .addbtn:hover { background: var(--primary-soft); }
+
+.curio .side-section { margin-top: 20px; }
+.curio .side-scroll .side-section:first-child { margin-top: 6px; }
+.curio .side-head { display: flex; align-items: center; gap: 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--text-soft); font-weight: 700; padding: 0 2px 6px; }
+.curio .side-head .htitle { flex: 1; }
+.curio .side-head .clr { background: var(--surface-2); border: none; color: var(--primary); font-size: 11px; font-weight: 700; border-radius: 10px; padding: 3px 8px; }
+
+.curio .navrow { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 8px; cursor: pointer; user-select: none; }
+.curio .navrow:hover { background: var(--surface-2); }
+.curio .navrow .count { color: var(--text-soft); font-size: 12px; }
+.curio .navrow .label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.curio .folderrow { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; cursor: pointer; }
+.curio .folderrow:hover { background: var(--surface-2); }
+.curio .folderrow .chev { background: none; border: none; color: var(--text-soft); width: 22px; height: 22px; display: grid; place-items: center; flex: 0 0 22px; transition: transform .15s ease; }
+.curio .folderrow .chev.open { transform: rotate(90deg); }
+.curio .folderrow .chev svg { width: 18px; height: 18px; }
+.curio .folderrow .fname { flex: 1; font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.curio .folderrow .fcount { color: var(--text-soft); font-size: 12px; }
+.curio .folderrow .fadd { width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center; flex: 0 0 20px; color: var(--text-soft); opacity: .6; }
+.curio .folderrow .fadd:hover { opacity: 1; color: var(--primary); background: var(--surface-2); }
+.curio .folderrow .eye { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; flex: 0 0 26px; color: var(--text-soft); }
+.curio .folderrow .eye:hover { background: var(--surface-2); }
+.curio .folderrow .eye.off { opacity: .5; }
+.curio .foldertags { padding-left: 20px; }
+
+.curio .tagrow { padding-left: 6px; }
+.curio .tagrow .tagcircle { width: 12px; height: 12px; border-radius: 50%; flex: 0 0 12px; padding: 0; border: 1px solid rgba(0,0,0,.12); box-sizing: border-box; cursor: pointer; }
+.curio .tagrow .tagcircle:hover { box-shadow: 0 0 0 2px var(--surface-2); }
+.curio .tagrow .eye { background: none; border: none; width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; flex: 0 0 26px; }
+.curio .tagrow .eye:hover { background: var(--surface-2); }
+.curio .tagrow .eye.on { opacity: 1; color: var(--text-soft); } .curio .tagrow .eye.off { opacity: .5; color: var(--text-soft); }
+.curio .tagrow.shown { background: var(--primary-soft); }
+.curio .tagrow.shown .label { color: var(--primary); font-weight: 600; }
+
+.curio .boardrow.current { background: var(--primary-soft); }
+.curio .boardrow.current .label { color: var(--primary); font-weight: 700; }
+.curio .boardrow .owner-av { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 10px; font-weight: 700; flex: 0 0 22px; }
+.curio .boardrow .dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 10px; }
+.curio .boardrow .eye { background: none; border: none; width: 28px; height: 28px; border-radius: 6px; display: grid; place-items: center; flex: 0 0 28px; }
+.curio .boardrow .eye:hover { background: var(--surface-2); }
+.curio .boardrow .eye.on { opacity: 1; color: var(--text-soft); } .curio .boardrow .eye.off { opacity: .5; color: var(--text-soft); }
+
+.curio .toolbar { position: sticky; top: 0; z-index: 20; background: var(--bg); display: flex; align-items: center; gap: 10px; padding: 14px 34px 12px 30px; }
+.curio .toolbar h1 { font-size: 19px; margin: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.curio .toolbar .spacer { flex: 1; }
+.curio .icon-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; width: 34px; height: 32px; padding: 0; display: grid; place-items: center; color: var(--text-soft); font-size: 12px; cursor: pointer; }
+.curio .icon-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.curio .segmented { display: inline-flex; width: max-content; height: 32px; align-items: center; background: var(--surface); box-shadow: 0 0 0 1px var(--border); border-radius: 16px; overflow: hidden; }
+.curio .segmented button { background: none; border: none; height: 100%; padding: 0 12px; color: var(--text-soft); display: grid; place-items: center; cursor: pointer; }
+.curio .segmented button svg { fill: currentColor; }
+.curio .segmented button.active { background: var(--primary); color: #fff; }
+
+.curio .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; padding: 12px 34px 30px 30px; flex: 1; align-content: start; }
+.curio .grid.masonry { display: block; column-width: 200px; column-gap: 8px; }
+.curio .grid.masonry .card { width: 100%; display: inline-block; margin: 0 0 8px; aspect-ratio: auto; break-inside: avoid; }
+.curio .grid.hmasonry { display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; }
+.curio .grid.hmasonry .card { aspect-ratio: auto; max-width: 480px; }
+
+.curio .card { position: relative; background: var(--surface); border-radius: 7px; overflow: hidden; box-shadow: var(--shadow); border: 2px solid transparent; aspect-ratio: 1/1; cursor: pointer; transition: transform .12s ease, box-shadow .12s ease; }
+.curio .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.curio .card.selected { border-color: var(--primary); }
+/* Brief highlight when a newly-created reference is scrolled into view. */
+.curio .card.flash { animation: rb-flash 1.6s ease; }
+@keyframes rb-flash { 0%, 60% { box-shadow: 0 0 0 3px var(--primary), var(--shadow-lg); } 100% { box-shadow: var(--shadow); } }
+.curio .card .thumb { position: absolute; inset: 0; background-size: cover; background-position: center; }
+.curio .thumbimg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* Vertical masonry: the thumb reserves its size up front (aspect-ratio from the
+   stored image dimensions, or a seed height fallback) so the grid lays out once;
+   the image then fills that reserved box. Aspect matches the image, so cover
+   fills exactly without cropping. */
+.curio .grid.masonry .card .thumb { position: relative; width: 100%; }
+.curio .grid.masonry .thumbimg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Minimalist play affordance: a soft, translucent circle with a white triangle that
+   blends into the thumbnail, on both the grid card and the detail poster. */
+.curio .card .playbadge { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,.32); backdrop-filter: blur(1px); display: grid; place-items: center; z-index: 5; color: #fff; pointer-events: none; }
+.curio .card .playbadge svg { margin-left: 2px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
+
+.curio .card.text { background: var(--surface); aspect-ratio: 1/1; }
+.curio .grid.masonry .card.text { aspect-ratio: auto; }
+.curio .tnote { position: absolute; inset: 0; padding: 14px; overflow: hidden; }
+.curio .grid.masonry .tnote { position: static; }
+.curio .tnote.md { font-size: 11px; line-height: 1.35; color: var(--text); }
+.curio .tnote.md h3 { font-size: 13px; margin: .15em 0; } .curio .tnote.md h4 { font-size: 12px; margin: .15em 0; }
+.curio .tnote.md p, .curio .tnote.md li { margin: .1em 0; } .curio .tnote.md .cbx { width: 12px; height: 12px; }
+
+.curio .md ul, .curio .md ol { margin: .35em 0; padding-left: 1.3em; } .curio .md li { margin: .15em 0; }
+.curio .md ul.md-check { list-style: none; padding-left: .1em; } .curio .md ul.md-check li { display: flex; gap: 7px; align-items: flex-start; }
+.curio .md .cbx { width: 15px; height: 15px; border: 1.5px solid var(--text-soft); border-radius: 4px; display: inline-grid; place-items: center; flex: 0 0 15px; margin-top: 2px; color: #fff; cursor: default; }
+.curio .md li.done .cbx { background: var(--primary); border-color: var(--primary); } .curio .md li.done { color: var(--text-soft); }
+/* Read-only Text editor: task-list checkboxes aren't clickable here, so don't imply it. */
+.curio .rb-texteditor .ProseMirror[contenteditable="false"] { cursor: default; }
+.curio .rb-texteditor .ProseMirror[contenteditable="false"] li[data-type="taskItem"] > label,
+.curio .rb-texteditor .ProseMirror[contenteditable="false"] li[data-type="taskItem"] input[type="checkbox"] { cursor: default; pointer-events: none; }
+.curio .md code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-size: .9em; } .curio .md a { color: var(--primary); }
+
+.curio .card .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; background: linear-gradient(to top, rgba(0,0,0,.66) 0%, rgba(0,0,0,.15) 42%, rgba(0,0,0,0) 70%); opacity: 0; transition: opacity .12s ease; padding: 10px; pointer-events: none; }
+.curio .card:hover .overlay, .curio .card.selected .overlay { opacity: 1; }
+.curio .grid.show-labels .overlay { opacity: 1; }
+.curio .card .ov-title { color: #fff; font-size: 13px; font-weight: 600; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+.curio .card .ov-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+.curio .pill { font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+.curio .card .domainchip { position: absolute; left: 8px; top: 8px; display: inline-flex; align-items: center; gap: 5px; background: rgba(0,0,0,.62); color: #fff; font-size: 11px; padding: 3px 8px 3px 6px; border-radius: 20px; max-width: calc(100% - 46px); z-index: 2; opacity: 0; transition: opacity .12s; }
+.curio .card.shared .domainchip { max-width: calc(100% - 76px); }
+.curio .domainchip .fav { width: 12px; height: 12px; border-radius: 3px; flex: 0 0 12px; }
+.curio .domainchip .d { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.curio .typebadge { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; border-radius: 6px; background: rgba(0,0,0,.55); color: #fff; display: grid; place-items: center; font-size: 12px; z-index: 2; opacity: 0; transition: opacity .12s; }
+/* Card chrome (source pill + type badge) is hidden by default so the grid is pure
+   images; it appears when labels are toggled on, on hover, or when selected. */
+.curio .grid.show-labels .domainchip, .curio .card:hover .domainchip, .curio .card.selected .domainchip,
+.curio .grid.show-labels .typebadge, .curio .card:hover .typebadge, .curio .card.selected .typebadge { opacity: 1; }
+.curio .card.shared .typebadge { right: 38px; }
+.curio .owner-badge { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 700; border: 2px solid var(--surface); z-index: 3; }
+.curio .checkbox { position: absolute; top: 8px; left: 8px; width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,.9); border: 2px solid rgba(0,0,0,.25); display: grid; place-items: center; z-index: 4; opacity: 0; transition: opacity .1s; color: var(--primary); }
+.curio .card:hover .checkbox, .curio .card.selected .checkbox { opacity: 1; }
+.curio .card.selected .checkbox { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+.curio .empty { text-align: center; color: var(--text-soft); padding: 80px 20px; grid-column: 1 / -1; }
+.curio .empty .big { font-size: 40px; }
+.curio .footnote { padding: 4px 20px 24px 30px; color: var(--text-soft); font-size: 12px; }
+.curio .hint { font-size: 12px; color: var(--text-soft); }
+
+.curio .actionbar { position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(160%); background: var(--text); color: var(--surface); border-radius: 30px; padding: 8px 10px 8px 18px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-lg); z-index: 40; transition: transform .18s cubic-bezier(.2,.8,.3,1); }
+.curio .actionbar.show { transform: translateX(-50%) translateY(0); }
+/* Center the action bar over the content (.main), not the whole app: when the
+   sidebar is open on desktop, shift right by half the sidebar width. */
+.curio:not(.nav-hidden) .actionbar { left: calc(50% + var(--sidebar-w) / 2); }
+.curio .actionbar .selcount { font-weight: 600; font-size: 13.5px; white-space: nowrap; }
+.curio .actionbar .abtn { background: rgba(127,127,127,.25); color: inherit; border: none; border-radius: 20px; padding: 8px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.curio .actionbar .abtn.danger { background: #e74c3c; color: #fff; }
+.curio .actionbar .abtn.ghost { background: transparent; }
+
+.curio .side-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.4); z-index: 15; }
+
+@media (max-width: 820px) {
+	.curio .sidebar { position: absolute; left: 0; top: 0; height: 100%; z-index: 25; margin-left: 0; transform: translateX(-100%); transition: transform .2s ease; box-shadow: var(--shadow-lg); width: 86vw; max-width: 340px; }
+	.curio .side-handle { left: 4px; top: 28px; height: 40px; }
+	.curio:not(.nav-hidden) .side-handle { left: calc(min(86vw, 340px) + 4px); }
+	.curio:not(.nav-hidden) .sidebar { transform: translateX(0); }
+	.curio.nav-hidden .sidebar { transform: translateX(-100%); margin-left: 0; }
+	/* Sidebar is an overlay on mobile, so the action bar centers on the full width. */
+	.curio:not(.nav-hidden) .actionbar { left: 50%; }
+	.curio .grid { grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 10px 10px 30px; }
+	.curio .grid.masonry { column-count: 3; column-width: auto; column-gap: 6px; }
+	.curio .toolbar { padding: 12px 10px 10px 44px; } .curio .toolbar h1 { font-size: 17px; }
+}
+
+/* ---------- modals ---------- */
+/* Reserve the NC header band so a tall modal centers BELOW the topbar instead of
+   sliding under it (visible on short/mobile screens). */
+.curio .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: calc(var(--header-height, 50px) + 8px) 0 12px; }
+.curio .modal { background: var(--surface); color: var(--text); border-radius: 16px; box-shadow: var(--shadow-lg); width: min(560px, 94vw); max-height: calc(100vh - var(--header-height, 50px) - 28px); display: flex; flex-direction: column; overflow: hidden; }
+.curio .modal .mhead { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 6px; }
+.curio .modal .mhead h2 { margin: 0; font-size: 17px; color: var(--text); font-weight: 700; }
+.curio .modal .close { background: none; border: none; color: var(--text-soft); display: grid; place-items: center; }
+.curio .tabs { display: flex; gap: 4px; padding: 6px 20px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.curio .tab { background: none; border: none; padding: 10px 12px; font-size: 13px; font-weight: 600; color: var(--text-soft); border-bottom: 2px solid transparent; }
+.curio .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.curio .mbody { padding: 18px 20px; overflow-y: auto; }
+.curio .field { margin-bottom: 14px; }
+.curio .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-soft); margin-bottom: 5px; }
+.curio .field input, .curio .field textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--surface); color: var(--text); font-family: inherit; }
+.curio .field textarea { min-height: 70px; resize: vertical; }
+.curio .dropzone { display: block; border: 2px dashed var(--border); border-radius: 8px; padding: 22px; text-align: center; color: var(--text-soft); background: var(--surface-2); font-size: 13px; cursor: pointer; }
+.curio .dropzone:hover { border-color: var(--accent, #2c8ee8); }
+.curio .dropzone.busy { opacity: .6; pointer-events: none; }
+.curio .btn { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.curio .btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.curio .btn.primary:disabled { opacity: .6; }
+.curio .btn.danger { color: #e74c3c; border-color: #e0a3a0; }
+.curio .mfoot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 20px 20px; }
+.curio .taginput { display: flex; flex-wrap: wrap; gap: 6px; border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; align-items: center; }
+.curio .taginput input { border: none; outline: none; flex: 1; min-width: 90px; background: transparent; color: var(--text); font-size: 13px; padding: 5px; }
+.curio .tgpill { font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 12px; display: inline-flex; gap: 5px; align-items: center; }
+.curio .tgpill .x { cursor: pointer; opacity: .85; }
+
+
+/* detail modal */
+.curio .modal.detail { width: min(1120px, 96vw); }
+/* Fullscreen: sit BELOW the Nextcloud top bar so our buttons don't collide with NC's. */
+.curio .modal.detail.fs { position: fixed; left: 0; top: var(--header-height, 50px); width: 100vw; height: calc(100vh - var(--header-height, 50px)); max-height: calc(100vh - var(--header-height, 50px)); border-radius: 0; }
+.curio .detail-wrap { display: flex; max-height: 86vh; overflow: hidden; }
+.curio .modal.detail.fs .detail-wrap { max-height: none; height: calc(100vh - var(--header-height, 50px)); }
+/* Drop the live player below the top button row (close/expand) so provider controls
+   (e.g. the YouTube/Instagram title bar) don't sit under those buttons - windowed + fs (A3). */
+.curio .det-video { margin-top: 46px; }
+.curio .det-videoel { margin-top: 46px; }
+.curio .modal.detail.fs .det-videoel { max-height: none; }
+.curio .detail-media { flex: 1.4; background: #0d0d10; min-height: 420px; display: flex; position: relative; }
+.curio .det-img { flex: 1; position: relative; background-size: contain; background-repeat: no-repeat; background-position: center; min-height: 420px; }
+.curio .det-imgtag { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.curio .playoverlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 66px; height: 66px; border-radius: 50%; background: rgba(0,0,0,.32); backdrop-filter: blur(1px); display: grid; place-items: center; color: #fff; text-decoration: none; z-index: 5; }
+.curio .playoverlay svg { margin-left: 3px; filter: drop-shadow(0 1px 3px rgba(0,0,0,.45)); }
+.curio button.playoverlay { border: none; cursor: pointer; }
+.curio .det-mediabox { flex: 1; position: relative; display: flex; min-height: 420px; }
+.curio .det-video { flex: 1; position: relative; background: #000; min-height: 420px; }
+.curio .det-videoframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.curio .det-videoel { flex: 1; width: 100%; min-height: 420px; max-height: 86vh; background: #000; object-fit: contain; }
+.curio .playoverlay:hover { background: rgba(0,0,0,.5); }
+.curio .playnote { position: absolute; left: 0; right: 0; bottom: 0; padding: 8px 10px; font-size: 11px; color: #fff; background: rgba(0,0,0,.5); text-align: center; }
+.curio .det-md { flex: 1; overflow-y: auto; background: var(--surface); position: relative; display: flex; flex-direction: column; }
+.curio .mdview { flex: 1; padding: 52px 30px 30px; font-size: 14.5px; line-height: 1.65; color: var(--text); }
+.curio .mdview.md h3 { font-size: 23px; } .curio .mdview.md h4 { font-size: 18px; }
+.curio .det-text { flex: 1; border: none; padding: 44px 30px 30px; font-size: 15px; line-height: 1.7; resize: none; background: var(--surface); color: var(--text); font-family: inherit; width: 100%; box-sizing: border-box; }
+/* Nextcloud Text editor mount points (real markdown editor). */
+.curio .rb-texteditor { flex: 1; min-height: 0; overflow-y: auto; background: var(--surface); text-align: left; }
+.curio .rb-texteditor:not(.add) { padding-top: 46px; }
+.curio .rb-texteditor.add { flex: none; min-height: 240px; max-height: 44vh; border: 1px solid var(--border); border-radius: 10px; padding: 2px 6px; }
+.curio .rb-texteditor .text-editor, .curio .rb-texteditor .editor { min-height: 100%; background: transparent; }
+/* Add-modal URL fetch row + preview */
+.curio .urlrow { display: flex; gap: 8px; }
+.curio .urlrow input { flex: 1; min-width: 0; }
+.curio .urlrow .btn { flex: none; white-space: nowrap; }
+.curio .fetchprev { display: flex; align-items: center; gap: 10px; margin: 2px 0 12px; }
+.curio .fetchprev img { width: 120px; height: 90px; object-fit: contain; border-radius: 8px; background: var(--surface-2, rgba(127,127,127,.12)); }
+.curio .fetchprev .fetchmsg { font-size: 12.5px; color: var(--text-soft); }
+.curio .fetchprev-img { position: relative; display: inline-block; line-height: 0; }
+.curio .crop-pencil { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 6px; background: rgba(0,0,0,.55); color: #fff; display: grid; place-items: center; }
+.curio .crop-pencil:hover { background: rgba(0,0,0,.78); }
+/* crop modal */
+.curio .cropmodal { width: min(680px, 96vw); }
+.curio .cropbody { display: flex; flex-direction: column; align-items: center; }
+.curio .cropstage { position: relative; display: inline-block; max-width: 100%; line-height: 0; overflow: hidden; user-select: none; touch-action: none; }
+.curio .cropimg { max-width: 100%; max-height: 58vh; display: block; }
+.curio .cropbox { position: absolute; border: 2px solid #fff; box-shadow: 0 0 0 9999px rgba(0,0,0,.45); cursor: move; box-sizing: border-box; }
+.curio .crophandle { position: absolute; width: 14px; height: 14px; background: #fff; border: 1px solid rgba(0,0,0,.35); border-radius: 2px; }
+.curio .crophandle.nw { left: -8px; top: -8px; cursor: nwse-resize; }
+.curio .crophandle.ne { right: -8px; top: -8px; cursor: nesw-resize; }
+.curio .crophandle.sw { left: -8px; bottom: -8px; cursor: nesw-resize; }
+.curio .crophandle.se { right: -8px; bottom: -8px; cursor: nwse-resize; }
+/* Image chooser: pick which image on the page to import as the photo. */
+.curio .imgpick { margin: 2px 0 12px; }
+.curio .imgpick-lbl { font-size: 12.5px; color: var(--text-soft); margin-bottom: 6px; }
+.curio .imgpick-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.curio .imgpick-thumb { flex: 0 0 auto; width: 92px; height: 92px; border-radius: 8px; overflow: hidden; border: 2px solid transparent; background: var(--surface-2, rgba(127,127,127,.12)); padding: 0; cursor: pointer; }
+.curio .imgpick-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.curio .imgpick-thumb.sel { border-color: var(--primary); }
+/* Settings modal controls */
+.curio .setseg { display: inline-flex; width: max-content; height: 36px; align-items: center; box-shadow: 0 0 0 1px var(--border); border-radius: 10px; overflow: hidden; }
+.curio .setseg button { height: 100%; display: flex; align-items: center; justify-content: center; background: none; padding: 0 16px; color: var(--text-soft); font-size: 13px; cursor: pointer; border-right: 1px solid var(--border) !important; }
+.curio .setseg button:last-child { border-right: 0 !important; }
+.curio .setseg button.active { border-right-color: transparent !important; background: var(--primary); color: #fff; }
+.curio .toggle-row { display: flex; align-items: center; justify-content: space-between; }
+.curio .rbtoggle { width: 48px; height: 26px; border-radius: 999px; background: rgba(132,142,153,.45); position: relative; cursor: pointer; flex: 0 0 auto; transition: background .15s; }
+.curio .rbtoggle span { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.35); transition: left .15s; }
+.curio .rbtoggle.on { background: var(--primary); }
+.curio .rbtoggle.on span { left: 25px; }
+.curio .mediabtn { position: absolute; top: 12px; background: rgba(0,0,0,.5); color: #fff; border: none; width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; z-index: 6; }
+.curio .mediabtn.expand { left: 12px; } .curio .mediabtn.closef { right: 12px; } .curio .mediabtn.mdedit { left: 54px; background: rgba(0,0,0,.35); }
+.curio .mediabtn.locate { right: 12px; bottom: 12px; top: auto; }
+.curio .detail-side { flex: 1; max-width: 360px; padding: 18px 20px 20px; overflow-y: auto; border-left: 1px solid var(--border); display: flex; flex-direction: column; gap: 16px; }
+.curio .dt-type { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-soft); }
+.curio .dt-title { font-size: 20px; font-weight: 700; line-height: 1.25; margin-top: 2px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.curio .dt-owner { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-soft); margin-top: 8px; }
+.curio .dt-owner .oav { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 10px; font-weight: 700; }
+.curio .sec { display: flex; flex-direction: column; gap: 7px; }
+.curio .sec-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-soft); display: flex; align-items: center; justify-content: space-between; }
+.curio .noteempty { color: var(--text-soft); font-style: italic; font-size: 13px; }
+/* location section */
+.curio .geo-src { font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--text-soft); }
+.curio .geo-current { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; }
+.curio .geo-open { flex: 1; display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-size: 13.5px; color: var(--primary); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.curio .geo-open:hover { text-decoration: underline; }
+.curio .geo-clear { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; color: var(--text-soft); flex: 0 0 26px; }
+.curio .geo-clear:hover { background: var(--surface-2); color: #e0736a; }
+/* NC gives inputs a server-wide margin (like the button chrome, lesson #1); the button
+   reset zeroes button margins but not inputs, which pushed the field below the button.
+   Zero the input margin + match heights so input and button render identical and top-aligned. */
+.curio .geo-edit { display: flex; gap: 8px; align-items: stretch; }
+.curio .geo-edit .geo-search { flex: 1; position: relative; display: flex; }
+.curio .geo-edit input { flex: 1; width: 100%; height: 36px !important; min-height: 36px !important; margin: 0 !important; box-sizing: border-box; padding: 0 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 13px; vertical-align: top; }
+.curio .geo-edit .btn { height: 36px !important; min-height: 36px !important; margin: 0 !important; padding: 0 14px; flex: 0 0 auto; align-self: stretch; }
+.curio .geo-detected { display: flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--text); background: var(--surface-2); border-radius: 8px; padding: 8px 12px; margin-bottom: 7px; }
+.curio .geo-detected-txt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.curio .geo-detected-x { flex: 0 0 auto; width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; color: var(--text-soft); }
+.curio .geo-detected-x:hover { background: var(--surface); color: #e0736a; }
+/* place typeahead dropdown (reuses .tagsug shell) */
+.curio .addgeo-search { position: relative; display: flex; }
+.curio .addgeo-search input { flex: 1; width: 100%; height: 36px !important; min-height: 36px !important; margin: 0 !important; box-sizing: border-box; padding: 0 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 13px; }
+.curio .geo-sug .tagsug-row { align-items: flex-start; }
+.curio .geo-sug-ic { flex: 0 0 auto; margin-top: 1px; color: var(--text-soft); }
+.curio .geo-sug-txt { flex: 1; min-width: 0; line-height: 1.35; }
+.curio .comment { display: flex; gap: 8px; margin-bottom: 12px; }
+.curio .comment .cav { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 700; flex: 0 0 26px; }
+.curio .comment .cname { font-weight: 600; font-size: 12.5px; display: flex; gap: 8px; align-items: center; }
+.curio .comment .cactions button { background: none; border: none; color: var(--text-soft); cursor: pointer; padding: 1px 4px; border-radius: 4px; }
+.curio .comment .ctext { font-size: 13px; }
+.curio .addcomment { display: flex; gap: 8px; margin-top: 4px; align-items: stretch; }
+/* NC styles inputs server-wide (min-height ~34, like the button chrome in lesson #1),
+   so force the comment input + Post button to one height with !important. */
+.curio .addcomment input { flex: 1; height: 38px !important; min-height: 38px !important; margin: 0 !important; box-sizing: border-box; padding: 0 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 13px; vertical-align: top; }
+.curio .addcomment .cbtn { height: 38px !important; min-height: 38px !important; margin: 0 !important; padding: 0 16px; flex: 0 0 auto; align-self: stretch; }
+/* Always-editable inline fields (description / note) - no Edit/Save toggle. */
+.curio .inlinefield { width: 100%; min-height: 60px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-family: inherit; font-size: 13.5px; line-height: 1.5; resize: none; overflow: hidden; }
+/* always-editable Link field (any entity type) */
+.curio .linkrow { display: flex; gap: 8px; align-items: stretch; }
+.curio .linkfield { flex: 1; width: 100%; height: 36px !important; min-height: 36px !important; margin: 0 !important; box-sizing: border-box; padding: 0 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 13px; }
+.curio .linkopen { height: 36px !important; min-height: 36px !important; margin: 0 !important; padding: 0 12px; flex: 0 0 auto; align-self: stretch; display: inline-flex; align-items: center; color: var(--primary); text-decoration: none; }
+.curio .inlinefield:focus { outline: none; border-color: var(--primary); }
+.curio .inlinefield::placeholder { color: var(--text-soft); }
+
+/* bulk tag list */
+.curio .mt-list { max-height: 46vh; overflow-y: auto; margin: 6px -20px 0; border-top: 1px solid var(--border); }
+.curio .mt-row { display: flex; align-items: center; gap: 12px; padding: 11px 20px; cursor: pointer; border-bottom: 1px solid var(--border); }
+.curio .mt-row:hover { background: var(--surface-2); }
+.curio .mt-check { width: 20px; height: 20px; border-radius: 5px; border: 2px solid var(--border); display: grid; place-items: center; color: #fff; font-size: 13px; font-weight: 800; flex: 0 0 20px; }
+.curio .mt-check.all { background: var(--primary); border-color: var(--primary); }
+.curio .mt-check.some { background: var(--primary); border-color: var(--primary); opacity: .55; }
+.curio .mt-name { flex: 1; } .curio .mt-circle { width: 18px; height: 18px; border-radius: 50%; flex: 0 0 18px; border: 1px solid rgba(0,0,0,.15); }
+.curio .mt-info { display: flex; align-items: center; gap: 10px; background: var(--primary-soft); color: var(--primary); font-weight: 600; font-size: 13px; padding: 12px 20px; margin: 0 -20px; }
+.curio .mt-create { padding: 11px 20px; color: var(--primary); font-weight: 600; cursor: pointer; border-bottom: 1px solid var(--border); }
+.curio .mt-create:hover { background: var(--surface-2); }
+
+@media (max-width: 560px) {
+	.curio .modal:not(.detail) { width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; border-radius: 0; }
+	.curio .detail-wrap { flex-direction: column; max-height: 90vh; overflow-y: auto; }
+	.curio .detail-media { min-height: 260px; } .curio .det-img, .curio .det-mediabox, .curio .det-video, .curio .det-videoel { min-height: 260px; }
+	.curio .detail-side { max-width: none; border-left: none; border-top: 1px solid var(--border); }
+	.curio .modal.detail { width: 100vw; }
+}
+
+/* ---------- management UI ---------- */
+.curio .side-head .hbtn { background: none; border: none; color: var(--text-soft); width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.curio .side-head .hbtn:hover { background: var(--surface-2); color: var(--primary); }
+/* No focus/active border-highlight on any app button; keep icon glyphs centered. */
+.curio .hbtn .ic, .curio .icon-btn .ic, .curio .mediabtn .ic, .curio .close .ic { vertical-align: 0; display: block; }
+
+/* Scroll position indicator (alphabetical letter / chronological month-year) */
+.curio .swgroup { margin-bottom: 10px; }
+.curio .swlabel { font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-soft); font-weight: 700; margin-bottom: 5px; }
+.curio .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.curio .swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; box-shadow: 0 0 0 1px rgba(0,0,0,.08); }
+.curio .swatch.sel { border-color: var(--text); box-shadow: 0 0 0 2px var(--surface) inset; }
+.curio .rb-select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 14px; }
+
+.curio .mgfolder { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-soft); padding: 14px 6px 4px; display: flex; align-items: center; gap: 8px; }
+.curio .mgfolder .factions { margin-left: auto; display: flex; gap: 6px; }
+.curio .mgfolder .factions button { background: none; border: none; color: var(--text-soft); font-size: 12px; cursor: pointer; padding: 2px 6px; border-radius: 5px; display: inline-flex; gap: 4px; align-items: center; }
+.curio .mgfolder .factions button:hover { background: var(--surface-2); color: var(--primary); }
+.curio .mgfolder .factions button.danger:hover { color: #e74c3c; }
+.curio .tagchipline { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-bottom: 1px solid var(--border); }
+.curio .tagchipline .c { width: 12px; height: 12px; border-radius: 50%; flex: 0 0 12px; }
+.curio .tagchipline .n { flex: 1; }
+.curio .tagchipline .count { color: var(--text-soft); font-size: 12px; }
+.curio .tagchipline button { background: none; border: none; color: var(--text-soft); cursor: pointer; padding: 3px 7px; border-radius: 5px; }
+.curio .tagchipline button:hover { background: var(--surface-2); color: var(--primary); }
+
+.curio .mgrow { display: flex; align-items: center; gap: 10px; padding: 10px 6px; border-bottom: 1px solid var(--border); }
+.curio .mgrow .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.curio .mgrow .acts { display: flex; gap: 6px; margin-left: auto; }
+.curio .mgrow .acts button { background: none; border: 1px solid var(--border); border-radius: 7px; padding: 5px 10px; font-size: 12.5px; font-weight: 600; color: var(--text-soft); }
+.curio .mgrow .acts button:hover { border-color: var(--primary); color: var(--primary); }
+.curio .mgrow .acts button.danger:hover { border-color: #e74c3c; color: #e74c3c; }
+.curio .sharedwith { font-size: 11.5px; color: var(--text-soft); margin-top: 3px; }
+.curio .shareline { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.curio .shareline .sl-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; }
+.curio .shareline .sl-seg { height: 30px; }
+.curio .shareline .sl-seg button { padding: 0 12px; font-size: 12.5px; }
+.curio .shareline .sl-x { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; color: var(--text-soft); flex: 0 0 28px; }
+.curio .shareline .sl-x:hover { background: var(--surface-2); color: #e0736a; }
+.curio .uchip { display: inline-flex; align-items: center; gap: 4px; background: var(--surface-2); border-radius: 10px; padding: 1px 7px; margin-right: 4px; }
+.curio .uchip .x { cursor: pointer; }
+
+.curio .scrim-top { z-index: 10001; }
+
+/* toasts */
+.curio .toasts { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 11000; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
+.curio .toast { pointer-events: auto; background: var(--surface-2, #2a2f37); color: var(--text, #e8eaed); border: 1px solid var(--border); border-radius: 9px; padding: 9px 14px; font-size: 13px; font-weight: 500; box-shadow: 0 6px 20px rgba(0, 0, 0, .28); max-width: min(420px, 92vw); }
+.curio .toast.error { border-color: #e0736a; }
+.curio .toast.success { border-color: #55b877; }
+
+/* drag & drop overlay */
+.curio .dropoverlay { position: absolute; inset: 0; z-index: 500; background: color-mix(in srgb, var(--bg, #1b1e24) 72%, transparent); display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.curio .dropbox { border: 2px dashed var(--primary); border-radius: 16px; padding: 34px 48px; text-align: center; color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
+.curio .dropbox p { margin: 10px 0 0; font-weight: 600; font-size: 14px; }
+
+/* fetch-warning footer */
+.curio .fetchwarn { flex: 1; font-size: 12.5px; color: var(--text-soft); }
+
+/* PDF detail view (top inset so the PDF toolbar clears the expand/close buttons) */
+.curio .det-pdf { width: 100%; height: 100%; min-height: 72vh; background: #1b1e24; padding-top: 52px; box-sizing: border-box; }
+.curio .det-pdfframe { width: 100%; height: 100%; min-height: calc(72vh - 52px); border: 0; display: block; background: #fff; }
+.curio .det-pdfloading { display: flex; align-items: center; justify-content: center; height: 100%; min-height: 60vh; color: var(--text-soft); font-size: 14px; }
+.curio .dropzone.dragover { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 10%, transparent); }
+
+/* open-link bar at the bottom of the preview */
+.curio .openlink-bar { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 6; display: inline-flex; align-items: center; gap: 7px; background: rgba(20, 22, 27, .82); color: #fff; border: 1px solid rgba(255, 255, 255, .18); border-radius: 20px; padding: 7px 14px; font-size: 13px; font-weight: 600; text-decoration: none; }
+.curio .openlink-bar:hover { background: rgba(20, 22, 27, .96); }
+
+/* editable detail title */
+.curio .titleedit { color: var(--text-soft); opacity: .65; }
+.curio .titleedit:hover { color: var(--primary); opacity: 1; }
+.curio .titleinput { flex: 1; min-width: 130px; padding: 6px 9px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface-2); color: var(--text); font-size: 15px; }
+
+/* type filter */
+.curio .typefilter { position: relative; display: inline-flex; }
+.curio .typemenu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 1000; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 5px; min-width: 190px; box-shadow: 0 8px 24px rgba(0, 0, 0, .25); }
+.curio .tm-row { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 7px; cursor: pointer; font-size: 13px; color: var(--text); }
+.curio .tm-row:hover { background: rgba(128, 128, 128, .14); }
+.curio .tm-row.sel { color: var(--primary); }
+.curio .tm-check { width: 13px; text-align: center; color: var(--primary); font-weight: 700; }
+.curio .tm-ic { display: inline-flex; opacity: .8; }
+.curio .tm-name { flex: 1; }
+.curio .tm-count { color: var(--text-soft); font-size: 12px; }
+/* Below the sticky toolbar (z-20) so the type menu inside it stays clickable;
+   above the grid so an outside click still closes the menu. */
+.curio .menuscrim { position: fixed; inset: 0; z-index: 15; }
+
+/* tag autocomplete */
+.curio .taginput-wrap { position: relative; }
+.curio .tagsug { position: absolute; top: calc(100% + 3px); left: 0; right: 0; z-index: 20; background: var(--surface-2); border: 1px solid var(--border); border-radius: 9px; padding: 4px; box-shadow: 0 8px 22px rgba(0, 0, 0, .22); max-height: 190px; overflow-y: auto; }
+.curio .tagsug-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--text); }
+.curio .tagsug-row:hover { background: rgba(128, 128, 128, .14); }
+.curio .tagsug-c { width: 11px; height: 11px; border-radius: 50%; flex: 0 0 auto; }
+
+/* hashtag suggestions from a fetched caption */
+.curio .hashsug { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 7px; }
+.curio .hashsug-lbl { font-size: 11.5px; color: var(--text-soft); margin-right: 2px; }
+.curio .hashsug-chip { border: 1px dashed var(--border); border-radius: 12px; padding: 3px 9px; font-size: 12px; color: var(--text-soft); background: none; cursor: pointer; }
+.curio .hashsug-chip:hover { border-color: var(--primary); color: var(--primary); border-style: solid; }
+.curio .hashsug-chip.hashsug-chip-on { border-style: solid; border-color: var(--primary); color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, transparent); }
+.curio .del-danger { display: flex; gap: 9px; align-items: flex-start; padding: 10px 12px; border-radius: 8px; background: color-mix(in srgb, #e0736a 12%, transparent); border: 1px solid color-mix(in srgb, #e0736a 45%, transparent); color: var(--text); font-size: 13px; line-height: 1.45; }
+.curio .del-danger-ic { flex: 0 0 auto; color: #e0736a; margin-top: 1px; }
+
+/* discreet scroll-order index */
+.curio .scrollindex { position: absolute; top: 60px; right: 5px; bottom: 16px; z-index: 8; width: 34px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; opacity: .8; transition: opacity .15s; }
+.curio .scrollindex:hover { opacity: 1; }
+.curio .si-mark { position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; min-height: 20px; width: 100%; }
+.curio .si-lbl { position: absolute; right: 26px; top: 50%; transform: translateY(-50%); white-space: nowrap; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 9px; opacity: 0; pointer-events: none; transition: opacity .12s; box-shadow: 0 2px 8px rgba(0, 0, 0, .2); }
+.curio .si-mark:hover .si-lbl { opacity: 1; }
+/* The chronological/alphabetical label auto-hides: it only shows while scrolling
+   (the container carries .active) for the current mark, or on hover. */
+.curio .scrollindex.active .si-mark.cur .si-lbl { opacity: 1; }
+.curio .si-mark.cur .si-lbl { color: var(--primary); border-color: var(--primary); }
+.curio .si-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-soft); opacity: .6; flex: 0 0 auto; }
+.curio .si-mark.cur .si-dot { background: var(--primary); opacity: 1; width: 13px; height: 13px; }
+.curio .si-mark:hover .si-dot { background: var(--primary); opacity: 1; }
+/* Mobile: the index overlays the grid (no gutter, see .grid padding) and slides
+   in from the right while scrolling, hiding again 2.5s after scrolling stops. */
+@media (max-width: 820px) {
+	.curio .scrollindex { display: flex; opacity: .95; transform: translateX(150%); transition: transform .28s ease; pointer-events: none; }
+	.curio .scrollindex.active { transform: translateX(0); pointer-events: auto; }
+}
+
+/* ===================== MAP VIEW (D) ===================== */
+/* isolate so Leaflet's internal panes/controls (z-index up to 1000) stay contained and
+   don't paint over the toolbar's type-filter dropdown (which lives in the z-index:20 toolbar). */
+.curio .rb-map-wrap { flex: 1; min-height: 0; position: relative; isolation: isolate; }
+.curio .rb-map { position: absolute; inset: 0; background: var(--surface-2, #e9edf2); }
+.curio[data-rbtheme="dark"] .rb-map { background: #14171c; }
+.curio .rb-map-empty { position: absolute; z-index: 500; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; color: var(--text-soft); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 26px; max-width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,.16); pointer-events: none; }
+.curio .rb-map-empty p { margin: 8px 0 0; font-size: 13.5px; }
+/* Leaflet resets: we use divIcons, so drop the default white icon chrome. */
+.curio .leaflet-div-icon { background: transparent; border: none; }
+.curio .rb-marker { background: transparent; border: none; }
+.curio .rb-marker-in { width: 46px; height: 46px; border-radius: 12px; overflow: hidden; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.35); background-size: cover; background-position: center; }
+.curio[data-rbtheme="dark"] .rb-marker-in { border-color: #2a2f37; }
+.curio .rb-marker-in img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.curio .rb-marker:hover .rb-marker-in { border-color: var(--primary); }
+/* Wrapper is NOT clipped, so the corner count badge (which overhangs the thumbnail) shows fully. */
+.curio .rb-marker-wrap { position: relative; width: 46px; height: 46px; }
+/* Cluster = the representative thumbnail with a count badge in the top-right corner. */
+.curio .rb-cluster-badge { position: absolute; top: -7px; right: -7px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--primary); color: #fff; font-weight: 700; font-size: 11.5px; line-height: 20px; text-align: center; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.35); z-index: 2; }
+.curio[data-rbtheme="dark"] .rb-cluster-badge { border-color: #2a2f37; }
+/* Leaflet controls in dark theme. */
+.curio .leaflet-bar a { color: var(--text); background: var(--surface); border-bottom-color: var(--border); }
+.curio .leaflet-bar a:hover { background: var(--surface-2); }
+.curio[data-rbtheme="dark"] .leaflet-control-attribution { background: rgba(20,23,28,.8); color: #9aa3ad; }
+.curio[data-rbtheme="dark"] .leaflet-control-attribution a { color: #b9c4d0; }
+
+/* First-run folder setup */
+.curio .setup-scrim { background: var(--bg); z-index: 3000; }
+.curio .setup-create { display: flex; gap: 8px; }
+.curio .setup-create input { flex: 1; padding: 9px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); color: var(--text); font-size: 13.5px; }
+.curio .setup-or { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: var(--text-soft); font-size: 12.5px; }
+.curio .setup-or::before, .curio .setup-or::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.curio .setup-pick { width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); color: var(--text); font-size: 13.5px; }
+.curio .setup-pick:hover { border-color: var(--primary); color: var(--primary); }
+.curio .brw-path { font-size: 12.5px; color: var(--text-soft); margin: 2px 0 6px; word-break: break-all; }
+.curio .brw-list { border: 1px solid var(--border); border-radius: 10px; max-height: 240px; overflow: auto; background: var(--surface); }
+.curio .brw-row { display: flex; align-items: center; gap: 9px; width: 100%; padding: 9px 11px; text-align: left; border-bottom: 1px solid var(--border); color: var(--text); font-size: 13.5px; }
+.curio .brw-row:last-child { border-bottom: none; }
+.curio .brw-row:hover { background: var(--surface-2); }
+.curio .brw-row.up { color: var(--text-soft); }
+.curio .brw-row.up .ic { transform: rotate(90deg); }
+.curio .brw-empty { padding: 16px 11px; color: var(--text-soft); font-size: 13px; text-align: center; }
+.curio .setup-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 12px; }
+.curio .setup-err { margin-top: 10px; color: #d94141; font-size: 13px; }
