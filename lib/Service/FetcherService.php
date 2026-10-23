@@ -23,7 +23,13 @@ use Psr\Log\LoggerInterface;
  * set the app config flag `allow_local_fetch=yes`; production leaves it off.
  */
 class FetcherService {
+	// Descriptive UA for API calls that ask for one (Nominatim's usage policy requires it).
 	private const UA = 'Mozilla/5.0 (compatible; Nextcloud-Curio/1.0; +https://nextcloud.com)';
+	// Realistic desktop-browser UA for page/media fetches. Instagram (and some other sites)
+	// serve a login wall or block outright when the UA looks like a bot, and they are far
+	// stricter from datacentre IPs (a hosted Nextcloud) than from a home connection - which
+	// is why an Instagram import can work on a self-hosted box but fail on a cloud host.
+	private const UA_BROWSER = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36';
 	private const MAX_HTML = 2 * 1024 * 1024;   // 2 MB of HTML is plenty for <head>
 	private const MAX_IMAGE = 12 * 1024 * 1024; // 12 MB image cap
 	private const MAX_UPLOAD = 32 * 1024 * 1024; // 32 MB upload cap (images + PDFs)
@@ -84,6 +90,14 @@ class FetcherService {
 				if ($meta['image'] !== null) {
 					$out['image'] = $meta['image'];
 					$out['video']['thumb'] = $meta['image'];
+				}
+				// YouTube's og:description is a truncated summary; the full video description
+				// sits in the watch page's ytInitialPlayerResponse JSON. Import that whole.
+				if (($video['provider'] ?? '') === 'youtube') {
+					$full = $this->youtubeDescription($html);
+					if ($full !== null && ($out['description'] === null || mb_strlen($full) > mb_strlen((string)$out['description']))) {
+						$out['description'] = $full;
+					}
 				}
 			}
 			if ($out['title'] === null || $out['image'] === null) {
@@ -297,7 +311,15 @@ class FetcherService {
 		if ($html === null) {
 			return [];
 		}
-		return $this->parseEmbedImages($html);
+		$imgs = $this->parseEmbedImages($html);
+		// A 200 response with no media means Instagram served a login/consent wall instead of
+		// the post - the usual symptom when the host IP is rate-limited or blocked (common on a
+		// cloud host, rare on a home connection). Log it so this case is visible in the log
+		// even though it is not an HTTP error.
+		if (empty($imgs) && (stripos($html, '/accounts/login') !== false || stripos($html, 'loginForm') !== false || mb_strlen($html) < 600)) {
+			$this->logger->warning('Curio: Instagram returned no media for a post (likely a login/consent wall - the host IP may be rate-limited or blocked by Instagram).');
+		}
+		return $imgs;
 	}
 
 	/**
@@ -594,6 +616,23 @@ class FetcherService {
 	 *
 	 * @return array{provider:string,id?:string,embed?:string,thumb?:string,src?:string}|null
 	 */
+	/**
+	 * Full YouTube video description. YouTube ships a truncated summary in og:description
+	 * but the complete description sits in the watch page's ytInitialPlayerResponse JSON as
+	 * "shortDescription" (a JSON-escaped string). Pull and unescape it; null if absent.
+	 */
+	private function youtubeDescription(string $html): ?string {
+		if (!preg_match('/"shortDescription":"((?:[^"\\\\]|\\\\.)*)"/', $html, $m)) {
+			return null;
+		}
+		$decoded = json_decode('"' . $m[1] . '"');
+		if (!is_string($decoded)) {
+			return null;
+		}
+		$decoded = trim($decoded);
+		return $decoded === '' ? null : $decoded;
+	}
+
 	private function guessVideo(string $url): ?array {
 		if (preg_match('#(?:youtube\.com/(?:watch\?v=|shorts/|embed/)|youtu\.be/)([\w-]{6,})#i', $url, $m)) {
 			return [
@@ -740,7 +779,7 @@ class FetcherService {
 	 *
 	 * @return array{key:string,mime:string}
 	 */
-	public function storeUpload(string $content, ?string $declaredMime): array {
+	public function storeUpload(string $content, ?string $declaredMime, bool $allowVideo = false): array {
 		if ($content === '' || strlen($content) > self::MAX_UPLOAD) {
 			throw new \InvalidArgumentException('File is empty or larger than the 32 MB limit');
 		}
@@ -749,6 +788,10 @@ class FetcherService {
 		if (!$allowed($mime)) {
 			$dm = $declaredMime !== null ? strtolower(trim(explode(';', $declaredMime)[0])) : '';
 			if ($allowed($dm)) {
+				$mime = $dm;
+			} elseif ($allowVideo && str_starts_with($dm, 'video/')) {
+				// Video bytes uploaded by the web clipper (a reel the server cannot fetch
+				// itself). detectImageMime won't recognise video, so trust the declared type.
 				$mime = $dm;
 			} else {
 				throw new \InvalidArgumentException('Only image or PDF uploads are supported');
@@ -2488,24 +2531,36 @@ class FetcherService {
 	/* ===================== low-level helpers ===================== */
 
 	private function fetchText(string $url, ?int $maxBytes = null): ?string {
+		$host = (string)parse_url($url, PHP_URL_HOST);
 		try {
 			$resp = $this->clientService->newClient()->get($url, $this->clientOptions(12));
 			if ($resp->getStatusCode() >= 400) {
+				// Logged at warning so a host that blocks this server (e.g. Instagram
+				// returning 403/429 from a datacentre IP) is visible in nextcloud.log
+				// without turning on debug logging.
+				$this->logger->warning('Curio fetch of ' . $host . ' returned HTTP ' . $resp->getStatusCode());
 				return null;
 			}
 			$body = (string)$resp->getBody();
 			return $body === '' ? null : substr($body, 0, $maxBytes ?? self::MAX_HTML);
 		} catch (\Throwable $e) {
-			$this->logger->debug('Curio fetchText failed: ' . $e->getMessage());
+			$this->logger->warning('Curio fetch of ' . $host . ' failed: ' . $e->getMessage());
 			return null;
 		}
 	}
 
 	/** @return array<string,mixed> */
-	private function clientOptions(int $timeout): array {
+	private function clientOptions(int $timeout, bool $browser = false): array {
+		$headers = $browser
+			? [
+				'User-Agent' => self::UA_BROWSER,
+				'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+				'Accept-Language' => 'en-US,en;q=0.9',
+			]
+			: ['User-Agent' => self::UA, 'Accept' => '*/*'];
 		$opts = [
 			'timeout' => $timeout,
-			'headers' => ['User-Agent' => self::UA, 'Accept' => '*/*'],
+			'headers' => $headers,
 			'allow_redirects' => ['max' => 5],
 		];
 		if ($this->config->getAppValue(Application::APP_ID, 'allow_local_fetch', 'no') === 'yes') {

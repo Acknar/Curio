@@ -37,13 +37,6 @@ npm install
 npm run build
 ```
 
-## Android app
-
-The `android/` folder holds Curio for Android, which replaces the web clipper on
-phones: share a post from Instagram, Pinterest, TikTok or any app straight into a
-board. See [android/README.md](android/README.md). It is not part of the Nextcloud
-app; leave `android/` and `.github/` out when packaging the app for the App Store.
-
 ## License
 
 Curio is licensed under the GNU Affero General Public License v3.0 or later.

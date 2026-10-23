@@ -70,6 +70,11 @@ class ApiController extends Controller {
 	}
 
 	#[NoAdminRequired]
+	public function searchUsers(string $q = ''): JSONResponse {
+		return $this->run(fn () => $this->service->searchUsers($q));
+	}
+
+	#[NoAdminRequired]
 	public function unshareBoard(int $id, string $shareWith): JSONResponse {
 		return $this->run(function () use ($id, $shareWith) {
 			$this->service->unshareBoard($id, $shareWith);

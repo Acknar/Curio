@@ -16,6 +16,7 @@ return [
 		['name' => 'api#deleteBoard', 'url' => '/api/boards/{id}', 'verb' => 'DELETE'],
 		['name' => 'api#shareBoard', 'url' => '/api/boards/{id}/share', 'verb' => 'POST'],
 		['name' => 'api#unshareBoard', 'url' => '/api/boards/{id}/share', 'verb' => 'DELETE'],
+		['name' => 'api#searchUsers', 'url' => '/api/users/search', 'verb' => 'GET'],
 		['name' => 'api#exportBoard', 'url' => '/api/boards/{id}/export', 'verb' => 'GET'],
 		['name' => 'api#importBoard', 'url' => '/api/boards/{id}/import', 'verb' => 'POST'],
 
@@ -52,5 +53,16 @@ return [
 		// base folder (first-run setup)
 		['name' => 'api#setBaseFolder', 'url' => '/api/base-folder', 'verb' => 'POST'],
 		['name' => 'api#browseFolders', 'url' => '/api/folders/browse', 'verb' => 'GET'],
+
+		// web clipper (CSRF-exempt, CORS, app-password auth) - see ClipController
+		['name' => 'clip#ping', 'url' => '/api/clip/ping', 'verb' => 'GET'],
+		['name' => 'clip#state', 'url' => '/api/clip/state', 'verb' => 'GET'],
+		['name' => 'clip#fetch', 'url' => '/api/clip/fetch', 'verb' => 'POST'],
+		['name' => 'clip#geocodeDetect', 'url' => '/api/clip/geocode/detect', 'verb' => 'GET'],
+		['name' => 'clip#geocodeSuggest', 'url' => '/api/clip/geocode/suggest', 'verb' => 'GET'],
+		['name' => 'clip#upload', 'url' => '/api/clip/upload', 'verb' => 'POST'],
+		['name' => 'clip#uploadVideo', 'url' => '/api/clip/upload-video', 'verb' => 'POST'],
+		['name' => 'clip#createTag', 'url' => '/api/clip/tags', 'verb' => 'POST'],
+		['name' => 'clip#reference', 'url' => '/api/clip/reference', 'verb' => 'POST'],
 	],
 ];

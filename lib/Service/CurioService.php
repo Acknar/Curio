@@ -149,6 +149,46 @@ class CurioService {
 		];
 	}
 
+	/**
+	 * Lightweight bootstrap for the web clipper: boards, tags and folders only,
+	 * with NO reference load and no per-board folder reconciliation, so the
+	 * popup opens fast. Mirrors the shapes getState() returns for these keys so
+	 * the extension can reuse the same rendering logic as the app's add dialog.
+	 */
+	public function clipState(): array {
+		$uid = $this->uid();
+		if (!$this->storage->baseConfigured($uid) || !$this->storage->baseExists($uid)) {
+			return [
+				'currentUser' => ['uid' => $uid, 'displayName' => $this->displayName($uid)],
+				'needsFolderSetup' => true,
+				'boards' => [],
+				'tags' => [],
+				'folders' => [],
+				'lang' => (string)$this->config->getUserValue($uid, 'core', 'lang', ''),
+			];
+		}
+		$this->discoverBoards($uid);
+		$owned = $this->boards->findOwned($uid);
+		if (count($owned) === 0) {
+			$owned = [$this->createDefaultBoard($uid)];
+		}
+		$shared = $this->boards->findSharedWith($uid);
+		$boardOut = [];
+		foreach ($owned as $b) {
+			$boardOut[] = $this->serializeBoard($b, $uid);
+		}
+		foreach ($shared as $b) {
+			$boardOut[] = $this->serializeBoard($b, $uid);
+		}
+		return [
+			'currentUser' => ['uid' => $uid, 'displayName' => $this->displayName($uid)],
+			'boards' => $boardOut,
+			'tags' => $this->tagService->listTags([], $uid),
+			'folders' => array_map(static fn (Folder $f) => $f->jsonSerialize(), $this->folders->findOwned($uid)),
+			'lang' => (string)$this->config->getUserValue($uid, 'core', 'lang', ''),
+		];
+	}
+
 	private function serializeBoard(Board $b, string $uid): array {
 		$mine = $b->getOwner() === $uid;
 		return [
@@ -309,6 +349,37 @@ class CurioService {
 		$this->createOrUpdateNcShare($ens['folder'], $b->getOwner(), $shareWith, $perms);
 		$this->upsertShareRow($id, $shareWith, $perms);
 		return $this->serializeBoard($b, $this->uid());
+	}
+
+	/**
+	 * Search Nextcloud users for the share-box typeahead, by display name and by
+	 * user id. Excludes the current user, dedupes, and caps the list small.
+	 *
+	 * @return array<int,array{uid:string,displayName:string}>
+	 */
+	public function searchUsers(string $q): array {
+		$q = trim($q);
+		if ($q === '') {
+			return [];
+		}
+		$me = $this->uid();
+		$out = [];
+		$seen = [];
+		$add = function ($u) use (&$out, &$seen, $me): void {
+			$uid = $u->getUID();
+			if ($uid === $me || isset($seen[$uid]) || count($out) >= 8) {
+				return;
+			}
+			$seen[$uid] = true;
+			$out[] = ['uid' => $uid, 'displayName' => $u->getDisplayName()];
+		};
+		foreach ($this->userManager->searchDisplayName($q, 15) as $u) {
+			$add($u);
+		}
+		foreach ($this->userManager->search($q, 15) as $u) {
+			$add($u);
+		}
+		return $out;
 	}
 
 	public function unshareBoard(int $id, string $shareWith): void {
@@ -930,6 +1001,17 @@ class CurioService {
 		return ['img' => self::UPLOAD_PREFIX . $res['key']];
 	}
 
+	/**
+	 * Store video bytes uploaded by the web clipper (e.g. an Instagram reel the server
+	 * cannot download from a datacentre IP). Returns an upload marker to place in a
+	 * video reference's video.src, so it materialises as a local, playable file.
+	 * @return array{upload:string}
+	 */
+	public function uploadVideo(string $content, ?string $mime): array {
+		$res = $this->fetcher->storeUpload($content, $mime, true);
+		return ['upload' => self::UPLOAD_PREFIX . $res['key']];
+	}
+
 	/* ===================== COMMENTS ===================== */
 
 	public function addComment(int $refId, string $message): array {
@@ -1137,6 +1219,15 @@ class CurioService {
 				// FILE_MARKER so the grid reads its real dimensions (native masonry, no crop).
 				$r->setImg(self::FILE_MARKER);
 			}
+			// The uploaded video blob is now a real file in the board folder; drop the
+			// appdata copy. The marker stays in video.src (a re-materialise then reads
+			// null and keeps the existing file rather than rebuilding a stub).
+			if ($r->getType() === 'video') {
+				$v = $r->getVideo() ? json_decode((string)$r->getVideo(), true) : null;
+				if (is_array($v) && ($v['provider'] ?? '') === 'file' && is_string($v['src'] ?? null) && str_starts_with((string)$v['src'], self::UPLOAD_PREFIX)) {
+					$this->fetcher->deleteUpload(substr((string)$v['src'], strlen(self::UPLOAD_PREFIX)));
+				}
+			}
 			$this->references->update($r);
 		} catch (\InvalidArgumentException $e) {
 			throw $e;
@@ -1304,7 +1395,9 @@ class CurioService {
 		$video = $r->getVideo() ? json_decode((string)$r->getVideo(), true) : null;
 
 		// Any uploaded file (image or PDF) is materialised from its appdata blob.
-		if (str_starts_with($img, self::UPLOAD_PREFIX)) {
+		// Videos are handled in the 'video' case below (their upload marker lives in
+		// video.src, and img holds the separate poster), so skip them here.
+		if ($type !== 'video' && str_starts_with($img, self::UPLOAD_PREFIX)) {
 			$up = $this->fetcher->getUpload(substr($img, strlen(self::UPLOAD_PREFIX)));
 			if ($up === null) {
 				return [null, ''];
@@ -1351,6 +1444,18 @@ class CurioService {
 				$src = (string)$r->getSourceUrl();
 				if (is_array($video) && ($video['provider'] ?? '') === 'file') {
 					$fileUrl = (string)($video['src'] ?? $src);
+					// Video bytes uploaded by the clipper (reel the server can't fetch itself).
+					if (str_starts_with($fileUrl, self::UPLOAD_PREFIX)) {
+						$up = $this->fetcher->getUpload(substr($fileUrl, strlen(self::UPLOAD_PREFIX)));
+						if ($up !== null) {
+							if ($r->getGeoSource() === null) {
+								$g = $this->fetcher->extractVideoGps($up['content']);
+								if ($g !== null) { $r->setLat($g['lat']); $r->setLng($g['lng']); $r->setGeoSource('video'); }
+							}
+							return [$up['content'], StorageService::extForMime($up['mime'], 'mp4')];
+						}
+						return [null, ''];
+					}
 					$dl = $this->fetcher->downloadFile($fileUrl);
 					if ($dl !== null) {
 						if ($r->getGeoSource() === null) {

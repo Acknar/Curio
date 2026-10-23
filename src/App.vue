@@ -60,7 +60,7 @@
 						<button class="hbtn" :title="tr('Manage tags & folders')" @click="manageTagsOpen = true" v-html="icon('dots', 16)" />
 					</div>
 					<div v-for="f in folders" :key="'f' + f.id">
-						<div class="folderrow" @click="toggleFolderExpand(f)">
+						<div class="folderrow" :class="{ 'drop-target': dragTag && dragOverFolder === f.id }" @click="toggleFolderExpand(f)" @dragover="onFolderDragOver($event, f.id)" @dragleave="onFolderDragLeave(f.id)" @drop.prevent="onFolderDrop($event, f.id)">
 							<button class="chev" :class="{ open: f.expanded }" v-html="icon('chevron', 18)" />
 							<span class="fname">{{ f.name }}</span>
 							<button class="fadd" :title="tr('New tag in this folder')" @click.stop="openTagModal(null, f.id)" v-html="icon('plus', 14)" /><span class="fcount">{{ tagsInFolder(f.id).length }}</span>
@@ -77,7 +77,7 @@
 						</div>
 					</div>
 					<template v-if="ungroupedTags.length">
-						<div class="folderrow" @click="ungroupedOpen = !ungroupedOpen"><button class="chev" :class="{ open: ungroupedOpen }" v-html="icon('chevron', 18)" /><span class="fname">{{ tr('Ungrouped') }}</span><button class="fadd" :title="tr('New tag')" @click.stop="openTagModal(null, null)" v-html="icon('plus', 14)" /><span class="fcount">{{ ungroupedTags.length }}</span><button class="eye" :class="folderShown(ungroupedTags) ? 'on' : 'off'" :title="tr('Show/hide all ungrouped tags')" @click.stop="toggleFolder(ungroupedTags)" v-html="icon(folderShown(ungroupedTags) ? 'eye' : 'eyeoff')" /></div>
+						<div class="folderrow" :class="{ 'drop-target': dragTag && dragOverFolder === '_ungrouped' }" @click="ungroupedOpen = !ungroupedOpen" @dragover="onFolderDragOver($event, '_ungrouped')" @dragleave="onFolderDragLeave('_ungrouped')" @drop.prevent="onFolderDrop($event, null)"><button class="chev" :class="{ open: ungroupedOpen }" v-html="icon('chevron', 18)" /><span class="fname">{{ tr('Ungrouped') }}</span><button class="fadd" :title="tr('New tag')" @click.stop="openTagModal(null, null)" v-html="icon('plus', 14)" /><span class="fcount">{{ ungroupedTags.length }}</span><button class="eye" :class="folderShown(ungroupedTags) ? 'on' : 'off'" :title="tr('Show/hide all ungrouped tags')" @click.stop="toggleFolder(ungroupedTags)" v-html="icon(folderShown(ungroupedTags) ? 'eye' : 'eyeoff')" /></div>
 						<div v-if="ungroupedOpen" class="foldertags">
 							<div v-for="t in ungroupedTags" :key="'t' + t.id" class="navrow tagrow" :class="{ shown: shownTags.includes(t.name) }" draggable="true" @dragstart="onTagDragStart($event, t)" @dragend="onTagDragEnd">
 								<button class="tagcircle" :style="{ background: t.color }" :title="tr('Change colour')" @click.stop="openTagModal(t)" />
@@ -96,8 +96,7 @@
 						<button class="hbtn" :title="tr('Manage boards')" @click="manageBoardsOpen = true" v-html="icon('dots', 16)" />
 					</div>
 					<div v-for="b in sortedBoards" :key="'b' + b.id" class="navrow boardrow" :class="{ current: isSolo(b) }">
-						<span v-if="b.mine" class="dot" :style="{ background: b.color }" />
-						<span v-else class="owner-av" :style="{ background: b.color }">{{ init(b.ownerDisplayName) }}</span>
+						<span class="owner-av" :style="{ background: b.color }" :title="b.mine ? currentUser.displayName : b.ownerDisplayName">{{ b.mine ? init(currentUser.displayName) : init(b.ownerDisplayName) }}</span>
 						<span class="label" @click="soloBoard(b)">{{ b.name }}</span>
 						<span class="count">{{ refCountForBoard(b.id) }}</span>
 						<button class="eye" :class="b.visible ? 'on' : 'off'" @click.stop="b.visible = !b.visible" v-html="icon(b.visible ? 'eye' : 'eyeoff')" />
@@ -111,7 +110,7 @@
 		<main class="main" ref="mainScroll" @scroll="onGridScroll" @dragover.prevent="onMainDragOver" @dragenter.prevent="onMainDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop">
 			<div v-if="dragOver" class="dropoverlay"><div class="dropbox"><span v-html="icon('image', 40)" /><p>{{ tr('Drop an image or a link to add it') }}</p></div></div>
 			<div class="toolbar">
-				<h1>{{ viewTitle }}</h1>
+				<h1 v-if="!hideViewTitle">{{ viewTitle }}</h1>
 				<div class="spacer" />
 				<button class="icon-btn" :class="{ active: settings.labels }" :title="tr('Always show titles & tags')" @click="toggleLabels"><b style="font-size:13px">Aa</b></button>
 				<div class="typefilter">
@@ -237,7 +236,7 @@
 						<div class="taginput-wrap">
 							<div class="taginput">
 								<span v-for="(t, i) in addTags" :key="t.id" class="tgpill" :style="{ background: t.color, color: on(t.color) }">{{ t.name }} <span class="x" @click="addTags.splice(i, 1)">✕</span></span>
-								<input v-model="addTagInput" :placeholder="tr('Add tags, Enter...')" @keydown.enter.prevent="commitAddTag">
+								<input v-model="addTagInput" :placeholder="tr('Add tags, Enter...')" @keydown.enter.prevent="addTagEnter" @keydown="onTagSepKey($event, 'add')">
 							</div>
 							<div v-if="addTagInput.trim() && addTagSuggestions.length" class="tagsug">
 								<div v-for="t in addTagSuggestions" :key="t.id" class="tagsug-row" @mousedown.prevent="pickAddTag(t)"><span class="tagsug-c" :style="{ background: t.color }" />{{ t.name }}</div>
@@ -267,7 +266,7 @@
 					<div class="detail-media">
 						<button class="mediabtn expand" :title="detailFs ? tr('Exit full screen') : tr('Full screen')" @click="detailFs = !detailFs" v-html="icon(detailFs ? 'minimize' : 'maximize', 18)" />
 						<button class="mediabtn closef" :title="tr('Close')" @click="closeDetail" v-html="icon('x', 18)" />
-						<div v-if="detailRef.type === 'text'" class="det-md">
+						<div v-if="detailRef.type === 'text'" class="det-md" @click.capture="onNoteCheckToggle">
 							<div v-if="textEditorReady" ref="detailSlot" class="rb-texteditor" :class="{ editing: editingBody }" />
 							<template v-else>
 								<div v-if="!editingBody" class="mdview md" v-html="md(detailRef.body)" />
@@ -303,7 +302,16 @@
 								<template v-if="!editingTitle"><span class="dt-titletext">{{ detailRef.title }}</span><button v-if="boardMine(detailRef)" class="titleedit" :title="tr('Rename')" @click="startTitle" v-html="icon('edit', 14)" /></template>
 								<template v-else><input v-model="titleDraft" class="titleinput" @keydown.enter="saveTitle" @keydown.esc="editingTitle = false"><button class="btn primary" style="padding:5px 9px" @click="saveTitle">{{ tr('Save') }}</button></template>
 							</div>
-							<div class="dt-owner"><span class="oav" :style="{ background: ownerColor(detailRef) }">{{ boardMine(detailRef) ? init(currentUser.displayName) : init(ownerName(detailRef)) }}</span>{{ boardMine(detailRef) ? tr('Your board') : ownerName(detailRef) }}</div>
+							<div class="dt-owner" @click="boardPickerOpen = false">
+								<span class="oav" :style="{ background: ownerColor(detailRef) }">{{ boardMine(detailRef) ? init(currentUser.displayName) : init(ownerName(detailRef)) }}</span>
+								<template v-if="boardMine(detailRef)">
+									<button class="dt-board" :title="tr('Move to another board')" @click.stop="boardPickerOpen = !boardPickerOpen"><span class="dt-board-name">{{ (boardById(detailRef.board) || {}).name }}</span><span class="dt-board-chev" v-html="icon('chevron', 13)" /></button>
+									<div v-if="boardPickerOpen" class="board-picker" @click.stop>
+										<div v-for="b in boards.filter(x => x.mine)" :key="'bp' + b.id" class="bp-row" :class="{ sel: b.id === detailRef.board }" @click="moveRefToBoard(b)"><span class="dot" :style="{ background: b.color }" /><span class="bp-name">{{ b.name }}</span><span v-if="b.id === detailRef.board" class="bp-check">✓</span></div>
+									</div>
+								</template>
+								<span v-else class="dt-board-static">{{ (boardById(detailRef.board) || {}).name }} · {{ ownerName(detailRef) }}</span>
+							</div>
 						</div>
 
 						<div v-if="detailRef.type !== 'text'" class="sec">
@@ -324,7 +332,7 @@
 							<div class="taginput-wrap">
 								<div class="taginput">
 									<span v-for="t in detailRef.tags" :key="t.id" class="tgpill" :style="{ background: t.color, color: on(t.color) }">{{ t.name }} <span class="x" @click="removeDetailTag(t)">✕</span></span>
-									<input v-model="detailTagInput" :placeholder="tr('Add a tag...')" @keydown.enter.prevent="commitDetailTag">
+									<input v-model="detailTagInput" :placeholder="tr('Add a tag...')" @keydown.enter.prevent="detailTagEnter" @keydown="onTagSepKey($event, 'detail')">
 								</div>
 								<div v-if="detailTagInput.trim() && detailTagSuggestions.length" class="tagsug">
 									<div v-for="t in detailTagSuggestions" :key="t.id" class="tagsug-row" @mousedown.prevent="pickDetailTag(t)"><span class="tagsug-c" :style="{ background: t.color }" />{{ t.name }}</div>
@@ -441,7 +449,14 @@
 			<div class="modal show" style="width:min(460px,94vw)">
 				<div class="mhead"><h2>{{ tr('Share "{name}"', { name: shareBoardRef.name }) }}</h2><button class="close" @click="shareOpen = false" v-html="icon('x', 18)" /></div>
 				<div class="mbody">
-					<div class="field"><label>{{ tr('Share with') }}</label><input ref="shareUserField" v-model="shareUser" :placeholder="tr('Nextcloud username')" @keydown.enter="doShare"></div>
+					<div class="field"><label>{{ tr('Share with') }}</label>
+						<div class="taginput-wrap">
+							<input ref="shareUserField" v-model="shareUser" :placeholder="tr('Name or username')" autocomplete="off" @input="onShareInput" @keydown.enter.prevent="shareEnter" @blur="onShareBlur">
+							<div v-if="shareSug.length" class="tagsug">
+								<div v-for="u in shareSug" :key="u.uid" class="tagsug-row" @mousedown.prevent="pickShareUser(u)"><span class="share-sug-av" :style="{ background: grad((u.displayName || u.uid).length * 5) }">{{ init(u.displayName || u.uid) }}</span><span class="share-sug-name">{{ u.displayName || u.uid }}</span><span v-if="u.displayName && u.displayName !== u.uid" class="share-sug-uid">{{ u.uid }}</span></div>
+							</div>
+						</div>
+					</div>
 					<div class="field">
 						<label>{{ tr('Access') }}</label>
 						<div class="setseg">
@@ -663,10 +678,10 @@ export default {
 			inputOpen: false, inputTitle: '', inputValue: '', inputPlaceholder: '', inputCb: null,
 			tagOpen: false, tagEditId: null, tagName: '', tagColor: PALETTE[1], tagFolder: null,
 			boardOpen: false, boardEditId: null, boardName: '', boardColor: PALETTE[8], boardLocation: '',
-			shareOpen: false, shareBoardRef: null, shareUser: '', sharePerm: 'edit', sharing: false, shareMsg: '',
+			shareOpen: false, shareBoardRef: null, shareUser: '', sharePerm: 'edit', sharing: false, shareMsg: '', shareSug: [],
 			manageTagsOpen: false, manageBoardsOpen: false, settingsOpen: false, deleteConfirm: null, deletingBoard: false,
 			dataBoardId: null, dataMsg: '', dataBusy: false,
-			toasts: [], toastSeq: 0, addWarn: false, fetched: false, dragOver: false, dragTag: null,
+			toasts: [], toastSeq: 0, addWarn: false, fetched: false, dragOver: false, dragTag: null, dragOverFolder: null, boardPickerOpen: false,
 			filterTypes: [], typeMenuOpen: false, currentIndexKey: '',
 			imgAspect: {}, scrollable: false,
 			needsSetup: false, folderConfigured: false, setupName: 'Curio', setupBusy: false, setupError: '',
@@ -703,6 +718,9 @@ export default {
 		ungroupedTags() { const fids = new Set(this.folders.map(f => f.id)); return this.tags.filter(t => t.folder === null || !fids.has(t.folder)).sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' })) },
 		gridClass() { return this.settings.layout === 'masonry' ? 'masonry' : this.settings.layout === 'hmasonry' ? 'hmasonry' : '' },
 		viewTitle() { const vis = this.boards.filter(b => b.visible); if (!vis.length) return this.tr('Nothing shown'); if (vis.length === 1) return vis[0].name; return vis.map(b => b.name).join('  +  ') },
+		// On small screens, hide the multi-board "A + B + C" heading: it takes the row's
+		// width and pushes the layout icons off. A single board name still shows.
+		hideViewTitle() { return this.isMobile && this.boards.filter(b => b.visible).length > 1 },
 		detailRef() { return this.references.find(r => r.id === this.detailRefId) || null },
 		titlePlaceholder() { return this.addTab === 'text' ? this.tr('Note title') : this.addTab === 'upload' ? this.tr('Image title') : this.tr('Title (optional)') },
 		targetBoard() { const v = this.boards.filter(b => b.visible && b.mine); if (v.length) return v[0]; const m = this.boards.filter(b => b.mine); return m[0] || this.boards[0] },
@@ -1053,7 +1071,31 @@ export default {
 				e.dataTransfer.setDragImage(pill, 12, 14)
 			} catch (err) { /* dnd unsupported */ }
 		},
-		onTagDragEnd() { this.dragTag = null; if (this._dragPill) { this._dragPill.remove(); this._dragPill = null } },
+		onTagDragEnd() { this.dragTag = null; this.dragOverFolder = null; if (this._dragPill) { this._dragPill.remove(); this._dragPill = null } },
+		/* ---- drag a tag onto a folder header to move it into that folder ---- */
+		onFolderDragOver(e, folderId) { if (!this.dragTag) return; e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'move'; this.dragOverFolder = folderId },
+		onFolderDragLeave(folderId) { if (this.dragOverFolder === folderId) this.dragOverFolder = null },
+		onFolderDrop(e, folderId) {
+			const tag = this.dragTag
+			this.dragOverFolder = null
+			if (!tag) return
+			e.stopPropagation()
+			if ((tag.folder ?? null) === (folderId ?? null)) return
+			this.moveTagToFolder(tag, folderId)
+		},
+		async moveTagToFolder(tag, folderId) {
+			try {
+				const { data } = await axios.put(api('/tags/' + tag.id), { name: tag.name, color: tag.color, folder: folderId })
+				const t = this.tags.find(x => x.id === tag.id)
+				if (t) { t.folder = (data && 'folder' in data) ? data.folder : (folderId ?? null) }
+				const dest = folderId == null ? this.tr('Ungrouped') : ((this.folders.find(f => f.id === folderId) || {}).name || '')
+				this.toast(this.tr('Moved "{name}" to {folder}', { name: tag.name, folder: dest }), 'success')
+			} catch (e) { this.toast(this.tr('Could not move the tag.'), 'error') }
+		},
+		/* ---- tag input: Enter validates the top suggestion; , or ; commits the typed text ---- */
+		addTagEnter() { if (this.addTagInput.trim() && this.addTagSuggestions.length) { this.pickAddTag(this.addTagSuggestions[0]) } else { this.commitAddTag() } },
+		detailTagEnter() { if (this.detailTagInput.trim() && this.detailTagSuggestions.length) { this.pickDetailTag(this.detailTagSuggestions[0]) } else { this.commitDetailTag() } },
+		onTagSepKey(e, which) { if (e.key === ',' || e.key === ';') { e.preventDefault(); if (which === 'add') this.commitAddTag(); else this.commitDetailTag() } },
 		onCardDragOver(e) { if (this.dragTag) { e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'copy' } },
 		onCardDrop(e, r) {
 			if (!this.dragTag) return
@@ -1131,7 +1173,10 @@ export default {
 		async resolveTag(name) {
 			const ex = this.tagByName(name)
 			if (ex) return ex
-			const folder = this.folders.length ? this.folders[0].id : null
+			// Quick-created tags (add dialog / entity preview / bulk) land in Ungrouped,
+			// not the first folder. Tags made from a folder's + button still go there
+			// (that path uses the tag modal with an explicit folder).
+			const folder = null
 			const { data } = await axios.post(api('/tags'), { name, color: rnd(), folder })
 			this.tags.push(data)
 			return data
@@ -1300,7 +1345,7 @@ export default {
 		openDetail(r) {
 			this.detach(this._detailHost)
 			this.textEditorReady = this.checkTextEditor()
-			this.detailRefId = r.id; this.detailFs = false; this.videoPlaying = this.autoPlayOnOpen(r); this.editingBody = this.editingTitle = false; this.commentText = ''; this.detailTagInput = ''
+			this.detailRefId = r.id; this.detailFs = false; this.videoPlaying = this.autoPlayOnOpen(r); this.editingBody = this.editingTitle = false; this.commentText = ''; this.detailTagInput = ''; this.boardPickerOpen = false
 			this.geoPlaceInput = ''; this.geoMsg = ''; this.geoSug = []
 			this.growInlineFields()
 			this.bodyDraft = r.body || ''
@@ -1565,6 +1610,51 @@ export default {
 		async saveBody() { await this.patch({ body: this.bodyDraft }); this.editingBody = false; if (this.detailEditorInst) this.detailEditorInst.setReadOnly(true) },
 		async commitDetailTag() { const n = this.detailTagInput.trim(); if (!n) return; const t = await this.resolveTag(n); const ids = this.detailRef.tags.map(x => x.id); if (!ids.includes(t.id)) ids.push(t.id); await this.patch({ tagIds: ids }); this.detailTagInput = '' },
 		async removeDetailTag(tag) { const ids = this.detailRef.tags.map(x => x.id).filter(id => id !== tag.id); await this.patch({ tagIds: ids }) },
+		// Move the open reference to another of my boards (the backend also moves the
+		// backing file into that board's Nextcloud folder).
+		async moveRefToBoard(b) {
+			this.boardPickerOpen = false
+			if (!b || !this.detailRef || b.id === this.detailRef.board) return
+			try {
+				await this.patch({ board: b.id })
+				b.visible = true
+				this.toast(this.tr('Moved to "{name}"', { name: b.name }), 'success')
+			} catch (e) { /* patch surfaces the error */ }
+		},
+		// Toggle a note's checklist item straight from the preview. Works for both the
+		// rendered-markdown fallback and the read-only Nextcloud Text editor: a click on a
+		// checkbox is caught in the capture phase, mapped to the Nth task line in the body
+		// markdown, flipped, saved, and reflected back into whichever renderer is showing.
+		onNoteCheckToggle(e) {
+			const root = e.currentTarget
+			const box = e.target.closest('input[type="checkbox"], .cbx, li[data-type="taskItem"] > label')
+			if (!box) return
+			const li = e.target.closest('li[data-type="taskItem"], ul.md-check > li')
+			if (!li) return
+			const items = Array.from(root.querySelectorAll('li[data-type="taskItem"], ul.md-check > li'))
+			const idx = items.indexOf(li)
+			if (idx < 0) return
+			e.preventDefault(); e.stopPropagation()
+			this.toggleChecklistItem(idx)
+		},
+		async toggleChecklistItem(idx) {
+			const lines = (this.detailRef.body || '').split('\n')
+			let count = -1, changed = false
+			for (let i = 0; i < lines.length; i++) {
+				const m = lines[i].match(/^(\s*[-*]\s+\[)([ xX])(\].*)$/)
+				if (!m) continue
+				count++
+				if (count === idx) { const done = m[2].trim() !== ''; lines[i] = m[1] + (done ? ' ' : 'x') + m[3]; changed = true; break }
+			}
+			if (!changed) return
+			const body = lines.join('\n')
+			this.detailRef.body = body
+			this.bodyDraft = body
+			try {
+				await this.patch({ body })
+				if (this.textEditorReady && this.detailEditorInst && !this.editingBody) { try { this.detailEditorInst.setContent(body) } catch (err) { /* editor reflects on reopen */ } }
+			} catch (e) { /* patch surfaces the error */ }
+		},
 		async postComment() { const v = this.commentText.trim(); if (!v) return; const { data } = await axios.post(api('/references/' + this.detailRef.id + '/comments'), { message: v }); this.detailRef.comments.push(data); this.commentText = '' },
 		async deleteComment(c) { try { await axios.delete(api('/comments/' + c.id)); const i = this.detailRef.comments.indexOf(c); if (i >= 0) this.detailRef.comments.splice(i, 1) } catch (e) { /* ignore */ } },
 		async deleteDetail() { const id = this.detailRef.id; try { await axios.delete(api('/references/' + id)); this.references = this.references.filter(r => r.id !== id); this.closeDetail() } catch (e) { this.toast(this.tr('Could not delete the reference.'), 'error') } },
@@ -1669,7 +1759,23 @@ export default {
 				this.toast(this.tr('Could not delete the board.'), 'error')
 			} finally { this.deletingBoard = false }
 		},
-		shareBoardPrompt(b) { this.shareBoardRef = b; this.shareUser = ''; this.sharePerm = 'edit'; this.shareMsg = ''; this.shareOpen = true; this.focusRef('shareUserField') },
+		shareBoardPrompt(b) { this.shareBoardRef = b; this.shareUser = ''; this.sharePerm = 'edit'; this.shareMsg = ''; this.shareSug = []; this.shareOpen = true; this.focusRef('shareUserField') },
+		// Typeahead of Nextcloud users for the share box (debounced; excludes already-shared).
+		onShareInput() {
+			const q = this.shareUser.trim()
+			if (this._shareTimer) clearTimeout(this._shareTimer)
+			if (q.length < 1) { this.shareSug = []; return }
+			this._shareTimer = setTimeout(async () => {
+				try {
+					const { data } = await axios.get(api('/users/search'), { params: { q } })
+					const have = new Set(((this.shareBoardRef && this.shareBoardRef.sharedWith) || []).map(u => u.uid))
+					this.shareSug = (Array.isArray(data) ? data : []).filter(u => !have.has(u.uid))
+				} catch (e) { this.shareSug = [] }
+			}, 250)
+		},
+		onShareBlur() { setTimeout(() => { this.shareSug = [] }, 150) },
+		pickShareUser(u) { this.shareUser = u.uid; this.shareSug = [] },
+		shareEnter() { if (this.shareSug.length) { this.pickShareUser(this.shareSug[0]) } else { this.doShare() } },
 		async doShare() {
 			const uid = this.shareUser.trim(); if (!uid || this.sharing) return
 			this.sharing = true; this.shareMsg = ''
