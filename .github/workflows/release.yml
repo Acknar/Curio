@@ -1,0 +1,49 @@
+name: Curio release
+
+# Push a tag like v2.0.0 to publish a GitHub release with the Nextcloud app
+# archive (curio-2.0.0.tar.gz, top folder "curio/") ready for the App Store.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the version matches appinfo/info.xml
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          echo "VERSION=$v" >> "$GITHUB_ENV"
+          grep -q "<version>$v</version>" appinfo/info.xml || { echo "appinfo/info.xml does not say $v"; exit 1; }
+
+      - name: Package the app
+        run: |
+          mkdir -p dist/curio
+          git archive HEAD appinfo img js l10n lib templates src CHANGELOG.md COPYING README.md package.json package-lock.json webpack.config.js | tar -x -C dist/curio
+          tar -C dist -czf "curio-$VERSION.tar.gz" curio
+          tar -tzf "curio-$VERSION.tar.gz" | head -20
+          sha256sum "curio-$VERSION.tar.gz"
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          awk -v v="$VERSION" '
+            $0 ~ "^## " v "( |$)" { on = 1; next }
+            on && /^## / { exit }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          test -s notes.md || echo "Curio $VERSION" > notes.md
+          cat notes.md
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Curio v${{ env.VERSION }}
+          body_path: notes.md
+          files: curio-${{ env.VERSION }}.tar.gz
+          make_latest: true

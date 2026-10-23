@@ -4,7 +4,11 @@ All notable changes to Curio are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 1.0.6 - 2026-10-23
+## 2.0.0 - 2026-10-23
+
+### Added
+
+- Curio for Android, a companion app kept in the `android/` folder of the repository (not part of this Nextcloud package). It opens your Curio boards full screen and adds references from the share menu of Instagram, Pinterest, TikTok, X, Reddit, YouTube or any app, replacing the web clipper on phones. It uses the `/api/clip/` endpoints and an app password created through Nextcloud's login flow.
 
 ### Fixed
 

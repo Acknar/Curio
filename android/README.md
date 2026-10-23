@@ -8,7 +8,7 @@ post from Instagram, Pinterest, TikTok, X, Reddit, YouTube or any browser to
 description, place and tags read from the post.
 
 Requires the Curio Nextcloud app 1.0.4 or later on the server (the `/api/clip/`
-endpoints, including `upload-video`). 1.0.6 adds the map tiles key.
+endpoints, including `upload-video`). 2.0.0 adds the map tiles key.
 
 ## What it does
 
