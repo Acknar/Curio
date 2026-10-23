@@ -74,6 +74,8 @@ Branch `claude/exciting-volta-o8u9im` holds all work. `main` is still at the ori
 
 ## Release process
 
+Releases also carry the Curio for Android APK: `release.yml` calls `android.yml` (a reusable workflow, input `release_tag`), which builds the APK with the cached CI key and attaches it to the same release. Release v2.0.1 (screenshots, new description, Nextcloud 35) is published with `curio-2.0.1.tar.gz` and `curio-android-1.1.0-release.apk`.
+
 `.github/workflows/release.yml` runs when a push changes `appinfo/info.xml` (or the workflow), or when a `v*` tag is pushed. It reads the version from `info.xml`, validates `info.xml` against the App Store schema, skips if release `v<version>` already exists, otherwise builds `curio-<version>.tar.gz` (top folder `curio/`: appinfo, img, js, l10n, lib, templates, src, CHANGELOG.md, COPYING, README.md, package.json, package-lock.json, webpack.config.js), creates tag `v<version>` on the pushed commit and publishes the release with the matching `CHANGELOG.md` section as notes.
 
 App Store upload (done by the user):
