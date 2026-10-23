@@ -1,0 +1,53 @@
+name: Map preview
+
+# Builds the frontend and screenshots the map layout with the real OpenFreeMap
+# basemap (light and dark) in Chromium, then publishes the images to the
+# "previews" branch for review.
+
+on:
+  push:
+    branches-ignore:
+      - previews
+    paths:
+      - 'src/**'
+      - 'lib/Controller/PageController.php'
+      - 'tests/preview/**'
+      - 'package.json'
+      - '.github/workflows/preview.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build the frontend
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Render the map
+        working-directory: tests/preview
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          node map-preview.js "$GITHUB_WORKSPACE/previews-out"
+
+      - name: Publish to the previews branch
+        run: |
+          cd previews-out
+          git init -q
+          git checkout -q -b previews
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          echo "Map preview for ${GITHUB_SHA}" > README.md
+          git add -A
+          git commit -q -m "Map preview for ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" previews

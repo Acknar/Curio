@@ -1,0 +1,11 @@
+{
+	"name": "curio-preview",
+	"private": true,
+	"description": "Renders Curio's real frontend bundle in Chromium against a mocked Nextcloud and Curio API, for screenshots.",
+	"scripts": {
+		"map": "node map-preview.js"
+	},
+	"devDependencies": {
+		"playwright": "1.56.1"
+	}
+}

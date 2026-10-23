@@ -50,6 +50,14 @@ class PageController extends Controller {
 		$csp->addAllowedFrameDomain('https://player.vimeo.com');
 		$csp->addAllowedFrameDomain('https://www.instagram.com'); // Instagram reel/tv embeds
 		$csp->addAllowedFrameDomain('https://instagram.com');
+		// OpenFreeMap vector basemaps: MapLibre fetches the style, tiles, fonts and
+		// sprites from tiles.openfreemap.org and renders them in a worker
+		// (js/curio-maplibre-worker.js, same origin; blob: for its fallback path).
+		$csp->addAllowedConnectDomain('https://tiles.openfreemap.org');
+		$csp->addAllowedWorkerSrcDomain("'self'");
+		$csp->addAllowedWorkerSrcDomain('blob:');
+		$csp->addAllowedImageDomain('data:');
+		$csp->addAllowedImageDomain('blob:');
 		$response->setContentSecurityPolicy($csp);
 
 		return $response;

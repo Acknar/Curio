@@ -132,8 +132,8 @@
 			<div v-else-if="error" class="empty"><p>{{ error }}</p></div>
 			<div v-else-if="settings.layout === 'map'" class="rb-map-wrap">
 				<div ref="mapEl" class="rb-map"></div>
-				<div v-if="!mapKey" class="rb-map-keynote">
-					<span>{{ mapCanEdit ? tr('The map needs a free CARTO API key. Add it in Settings.') : tr('The map needs a CARTO API key. Ask your Nextcloud administrator to add one in Curio settings.') }}</span>
+				<div v-if="mapLoadError" class="rb-map-keynote">
+					<span>{{ mapCanEdit ? tr('The map could not be loaded. You can add a free CARTO API key in Settings to use CARTO maps instead.') : tr('The map could not be loaded. Your Nextcloud administrator can add a CARTO API key in Curio settings to use CARTO maps instead.') }}</span>
 					<button v-if="mapCanEdit" class="btn" @click="openSettings">{{ tr('Open settings') }}</button>
 				</div>
 				<div v-if="!locatedRefs.length" class="rb-map-empty"><span v-html="icon('pin', 34)" /><p>{{ tr('No references have a location yet. Add one from a reference\'s Location section.') }}</p></div>
@@ -593,7 +593,7 @@
 					<div v-if="mapCanEdit" class="field">
 						<label>{{ tr('Map tiles (CARTO API key)') }}</label>
 						<div class="urlrow"><input v-model="mapKeyInput" :placeholder="tr('Paste your CARTO basemaps key')" spellcheck="false" autocomplete="off" @keydown.enter.prevent="saveMapKey"><button class="btn" :disabled="mapKeyBusy || mapKeyInput.trim() === mapKey" @click="saveMapKey">{{ tr('Save') }}</button></div>
-						<div class="hint" style="margin-top:6px">{{ mapKeyMsg || tr('The map view uses CARTO basemaps, which need a free API key from carto.com/basemaps/apikey. It applies to everyone on this Nextcloud.') }}</div>
+						<div class="hint" style="margin-top:6px">{{ mapKeyMsg || tr('Optional. The map uses OpenFreeMap, which needs no key. To use CARTO maps instead, paste a free key from carto.com/basemaps/apikey. It applies to everyone on this Nextcloud.') }}</div>
 					</div>
 				</div>
 				<div class="mfoot"><button class="btn primary" @click="settingsOpen = false">{{ tr('Done') }}</button></div>
@@ -642,12 +642,33 @@
 <script>
 import { markRaw } from 'vue'
 import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
+import { generateUrl, generateFilePath } from '@nextcloud/router'
 import { ic, playSvg, grad, svgThumb, initials, textOn, mdToHtml, parseVideo, videoWatchUrl, domainOf, TYPE_ICON, TYPE_NAME, PALETTE, PALETTE_GROUPS } from './helpers.js'
 import L from 'leaflet'
 import 'leaflet.markercluster'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
+
+// OpenFreeMap vector basemaps (no API key). MapLibre is large, so it loads as a
+// separate chunk the first time the map is shown. Its worker is shipped next to the
+// bundle as js/curio-maplibre-worker.js (copied at build time, see package.json).
+let vectorMapsLoader = null
+function loadVectorMaps() {
+	if (!vectorMapsLoader) {
+		vectorMapsLoader = (async () => {
+			const [mod] = await Promise.all([
+				import(/* webpackChunkName: "maplibre" */ 'maplibre-gl'),
+				import(/* webpackChunkName: "maplibre" */ 'maplibre-gl/dist/maplibre-gl.css'),
+			])
+			const maplibregl = mod.default || mod
+			maplibregl.setWorkerUrl(generateFilePath('curio', '', 'js/curio-maplibre-worker.js'))
+			await import(/* webpackChunkName: "maplibre" */ '@maplibre/maplibre-gl-leaflet')
+			return maplibregl
+		})()
+		vectorMapsLoader.catch(() => { vectorMapsLoader = null })
+	}
+	return vectorMapsLoader
+}
 
 const api = (p) => generateUrl('/apps/curio/api' + p)
 const rnd = () => PALETTE[Math.floor(Math.random() * PALETTE.length)]
@@ -690,7 +711,7 @@ export default {
 			shareOpen: false, shareBoardRef: null, shareUser: '', sharePerm: 'edit', sharing: false, shareMsg: '', shareSug: [],
 			manageTagsOpen: false, manageBoardsOpen: false, settingsOpen: false, deleteConfirm: null, deletingBoard: false,
 			dataBoardId: null, dataMsg: '', dataBusy: false,
-			mapKey: '', mapCanEdit: false, mapKeyInput: '', mapKeyBusy: false, mapKeyMsg: '',
+			mapKey: '', mapCanEdit: false, mapKeyInput: '', mapKeyBusy: false, mapKeyMsg: '', mapLoadError: false,
 			toasts: [], toastSeq: 0, addWarn: false, fetched: false, dragOver: false, dragTag: null, dragOverFolder: null, boardPickerOpen: false,
 			filterTypes: [], typeMenuOpen: false, currentIndexKey: '',
 			imgAspect: {}, scrollable: false,
@@ -1479,11 +1500,11 @@ export default {
 		},
 
 		/* ---- map view (D) ---- */
-		// CARTO minimalist basemaps, switched with the theme. Tiles are images so the
-		// existing img CSP ('*') covers them; Leaflet + markercluster are bundled (no CDN).
-		// CARTO needs the server's API key on every tile (without it tiles carry an "API
-		// key required" watermark). Nextcloud pages send no Referer, so tiles opt back in
-		// to sending the origin: a key restricted to this domain then works.
+		// Basemap, switched with the theme. Without a key: OpenFreeMap's Positron and
+		// Dark Matter vector styles (free, no key; MapLibre rendered inside Leaflet).
+		// With the server's CARTO key: CARTO's raster versions of the same two styles.
+		// CARTO tiles opt back in to sending the origin as Referer (Nextcloud pages send
+		// none), so a key restricted to this domain works.
 		mapTiles() {
 			const dark = this.theme === 'dark';
 			const key = this.mapKey ? '?key=' + encodeURIComponent(this.mapKey) : '';
@@ -1491,6 +1512,35 @@ export default {
 				url: 'https://{s}.basemaps.cartocdn.com/' + (dark ? 'dark_all' : 'light_all') + '/{z}/{x}/{y}{r}.png' + key,
 				opts: { subdomains: 'abcd', maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO', referrerPolicy: 'strict-origin-when-cross-origin' },
 			};
+		},
+		async makeBaseLayer() {
+			if (this.mapKey) {
+				const t = this.mapTiles();
+				return L.tileLayer(t.url, t.opts);
+			}
+			await loadVectorMaps();
+			return L.maplibreGL({ style: 'https://tiles.openfreemap.org/styles/' + (this.theme === 'dark' ? 'dark' : 'positron') });
+		},
+		async applyBaseLayer() {
+			const seq = (this._baseSeq = (this._baseSeq || 0) + 1);
+			this.mapLoadError = false;
+			let layer;
+			try {
+				layer = await this.makeBaseLayer();
+			} catch (e) {
+				if (seq === this._baseSeq) this.mapLoadError = true;
+				return;
+			}
+			if (!this._map || seq !== this._baseSeq) return;
+			if (this._tiles) this._map.removeLayer(this._tiles);
+			this._tiles = layer.addTo(this._map);
+			const gl = layer.getMaplibreMap ? layer.getMaplibreMap() : null;
+			if (gl) {
+				// A style or tile request that fails before anything was drawn means the
+				// free map is unreachable from here: say so and point to the CARTO option.
+				gl.on('error', () => { if (seq === this._baseSeq && !gl.loaded()) this.mapLoadError = true; });
+				gl.on('load', () => { if (seq === this._baseSeq) this.mapLoadError = false; });
+			}
 		},
 		// Rounded-square thumbnail tile for a ref (used by both single markers and the
 		// cluster's representative image). `badge` = a count shown top-right (clusters).
@@ -1503,7 +1553,7 @@ export default {
 		},
 		buildMap() {
 			if (this._map || !this.$refs.mapEl) return;
-			const map = L.map(this.$refs.mapEl, { zoomControl: true, attributionControl: true, worldCopyJump: true, maxBoundsViscosity: 1.0 });
+			const map = L.map(this.$refs.mapEl, { zoomControl: true, attributionControl: true, worldCopyJump: true, maxBoundsViscosity: 1.0, maxZoom: 19 });
 			// Clamp LATITUDE to the map's edges so you can never pan or zoom out past the top or
 			// bottom of the map (the dark gutters). Longitude is left effectively free (very wide
 			// bounds) so the world still wraps horizontally to fill a wide container.
@@ -1519,8 +1569,6 @@ export default {
 				this._map.setMinZoom(Math.max(1, Math.ceil(Math.log2(h / 256))));
 			};
 			map.on('resize', this._clampMinZoom);
-			const t = this.mapTiles();
-			this._tiles = L.tileLayer(t.url, t.opts).addTo(map);
 			this._cluster = L.markerClusterGroup({
 				showCoverageOnHover: false,
 				maxClusterRadius: 48,
@@ -1537,6 +1585,7 @@ export default {
 			});
 			map.addLayer(this._cluster);
 			this._map = map;
+			this.applyBaseLayer();
 			this.refreshMapMarkers();
 			this.$nextTick(() => { if (this._map) { this._map.invalidateSize(); this._clampMinZoom(); } });
 		},
@@ -1565,9 +1614,7 @@ export default {
 		},
 		swapMapTiles() {
 			if (!this._map) return;
-			if (this._tiles) { this._map.removeLayer(this._tiles); }
-			const t = this.mapTiles();
-			this._tiles = L.tileLayer(t.url, t.opts).addTo(this._map);
+			this.applyBaseLayer();
 		},
 		destroyMap() {
 			if (this._map) { try { this._map.remove(); } catch (e) { /* already gone */ } }

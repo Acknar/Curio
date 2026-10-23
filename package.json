@@ -4,14 +4,18 @@
 	"description": "Curio frontend",
 	"private": true,
 	"scripts": {
-		"build": "webpack --node-env production --progress",
-		"dev": "webpack --node-env development --progress"
+		"build": "webpack --node-env production --progress && npm run copy-map-worker",
+		"copy-map-worker": "node -e \"require('fs').copyFileSync('node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs', 'js/curio-maplibre-worker.js')\"",
+		"dev": "webpack --node-env development --progress && npm run copy-map-worker"
 	},
 	"dependencies": {
+		"@maplibre/maplibre-gl-leaflet": "^0.1.4",
 		"@nextcloud/axios": "^2.5.0",
 		"@nextcloud/router": "^3.0.1",
 		"leaflet": "^1.9.4",
 		"leaflet.markercluster": "^1.5.3",
+		"maplibre-gl": "^6.15.0",
+		"qrcode-generator": "^2.0.4",
 		"vue": "^3.5.0"
 	},
 	"devDependencies": {
