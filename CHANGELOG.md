@@ -4,6 +4,18 @@ All notable changes to Curio are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.1.0 - 2026-10-23
+
+### Added
+
+- First-run tour. The first time each user opens Curio, a short tour shows how to add references, organize them with tags, boards and layouts, and share boards. Its last step offers Curio for Android: a QR code and a download link to the latest APK, with step-by-step instructions for allowing the install in Android's security settings and the server address to sign in with. The tour can be replayed from Settings, under Help, which also has a "Get the Android app" button.
+- The map works without any API key: when no CARTO key is set, it uses OpenFreeMap vector basemaps (light and dark styles, OpenStreetMap data), rendered with MapLibre GL inside the existing Leaflet map. MapLibre is loaded only when the map layout is opened. A CARTO key set by an administrator is still used when present.
+
+### Changed
+
+- The map notice now appears only if the basemap fails to load, and points to the optional CARTO key.
+- Translations completed for French, Spanish, German, Italian, Portuguese and Dutch, including the Curio folder picker and tag moves, which were still in English.
+
 ## 2.0.1 - 2026-10-23
 
 ### Changed

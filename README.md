@@ -25,9 +25,11 @@ rename or remove it and the board follows.
 
 ## Map tiles
 
-The map layout uses CARTO basemaps, which need a free API key. Get one at
-https://carto.com/basemaps/apikey/, then either paste it in Curio > Settings >
-"Map tiles (CARTO API key)" as an administrator, or run:
+The map layout uses [OpenFreeMap](https://openfreemap.org) vector basemaps
+(OpenStreetMap data, light and dark styles), which need no API key. To use CARTO
+basemaps instead, get a free key at https://carto.com/basemaps/apikey/, then
+either paste it in Curio > Settings > "Map tiles (CARTO API key)" as an
+administrator, or run:
 
 ```
 occ config:app:set curio carto_api_key --value=YOUR_KEY
@@ -56,7 +58,10 @@ npm run build
 
 The `android/` folder holds Curio for Android: the full Curio app on a phone,
 plus clipping from the share menu of Instagram, Pinterest, TikTok or any app.
-See [android/README.md](android/README.md). It is not part of the Nextcloud app;
+Download the latest APK from
+[Releases](https://github.com/Acknar/Curio/releases/latest/download/curio-android.apk);
+Curio's first-run tour (replayable from Settings > Help) links to it with a QR
+code and install steps. See [android/README.md](android/README.md). It is not part of the Nextcloud app;
 leave `android/`, `.github/` and `node_modules/` out when packaging the app.
 
 ## License

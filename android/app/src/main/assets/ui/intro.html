@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<title>Curio</title>
+	<link rel="stylesheet" href="../curio/styles.css">
+	<link rel="stylesheet" href="app.css">
+</head>
+<body>
+	<!-- First run after connecting, laid out like Curio's first-run tour. -->
+	<div class="curio page" id="root">
+		<div class="modal pagemodal intro">
+			<div class="mhead"><h2 id="iTitle"></h2><button class="close" id="btnSkip" data-icon="x" data-size="18"></button></div>
+			<div class="mbody tour-body">
+				<div class="tour-art" id="iArt"></div>
+
+				<section data-step="welcome" data-title="Welcome to Curio for Android" data-art="sparkle">
+					<p class="tour-lead" data-tr="Your boards open full screen, just like Curio in your browser. App settings is at the bottom of the sidebar, under Settings.">Your boards open full screen, just like Curio in your browser. App settings is at the bottom of the sidebar, under Settings.</p>
+					<p class="tour-lead" data-tr="The app also puts Curio in your phone's share menu, so you can add references from any app. This short introduction shows how.">The app also puts Curio in your phone's share menu, so you can add references from any app. This short introduction shows how.</p>
+				</section>
+
+				<section data-step="share" data-title="Add from any app" data-art="share">
+					<ul class="tour-list">
+						<li><span data-icon="share" data-size="17"></span><span data-tr="In Instagram, Pinterest, TikTok, YouTube, your browser or any other app, tap Share, then Add to Curio.">In Instagram, Pinterest, TikTok, YouTube, your browser or any other app, tap Share, then Add to Curio.</span></li>
+						<li><span data-icon="pin" data-size="17"></span><span data-tr="On most phones you can long-press Add to Curio in the share menu and pin it, so it stays first.">On most phones you can long-press Add to Curio in the share menu and pin it, so it stays first.</span></li>
+						<li><span data-icon="check" data-size="17"></span><span data-tr="Check the title, description, tags and board, then tap Add to board. The reference is in Curio straight away.">Check the title, description, tags and board, then tap Add to board. The reference is in Curio straight away.</span></li>
+						<li><span data-icon="image" data-size="17"></span><span data-tr="Photos, videos and PDFs from your gallery or Files app, and text you select, are shared the same way.">Photos, videos and PDFs from your gallery or Files app, and text you select, are shared the same way.</span></li>
+					</ul>
+				</section>
+
+				<section data-step="reads" data-title="What Curio reads" data-art="text">
+					<div class="intro-platforms" id="iPlatforms"></div>
+					<p class="hint intro-after" data-tr="Hashtags in a caption become tag suggestions, and a place named in it is put on the map.">Hashtags in a caption become tag suggestions, and a place named in it is put on the map.</p>
+				</section>
+
+				<section data-step="sites" data-title="Sign in to your sites" data-art="lock">
+					<p class="tour-lead" data-tr="Some sites show more to people who are signed in. Sign in here once and the share menu reads posts the way you see them: private accounts, full carousels, reels. This is optional.">Some sites show more to people who are signed in. Sign in here once and the share menu reads posts the way you see them: private accounts, full carousels, reels. This is optional.</p>
+					<div id="iSites"></div>
+					<p class="hint intro-after" data-tr="Curio never sees these passwords; the sign-in stays on this phone. You can change this later in App settings.">Curio never sees these passwords; the sign-in stays on this phone. You can change this later in App settings.</p>
+				</section>
+
+				<section data-step="board" data-title="Pick a default board" data-art="grid">
+					<p class="tour-lead" data-tr="The share menu suggests this board first. You can still pick another board each time you add something.">The share menu suggests this board first. You can still pick another board each time you add something.</p>
+					<div class="field">
+						<label data-tr="Default board for the share menu">Default board for the share menu</label>
+						<select id="iBoard" class="rb-select"><option value="" data-tr="First board">First board</option></select>
+						<div class="hint" id="iBoardHint" style="margin-top:6px"></div>
+					</div>
+					<p class="hint tour-replay" data-tr="You can see this introduction again from App settings.">You can see this introduction again from App settings.</p>
+				</section>
+			</div>
+			<div class="mfoot tour-foot">
+				<div class="tour-dots" id="iDots"></div>
+				<button class="btn" id="btnPrev" data-tr="Back">Back</button>
+				<button class="btn primary" id="btnNext" data-tr="Next">Next</button>
+				<button class="btn primary" id="btnStart" data-tr="Start using Curio">Start using Curio</button>
+			</div>
+		</div>
+	</div>
+	<script src="native.js"></script>
+	<script src="app-l10n.js"></script>
+	<script src="look.js"></script>
+	<script src="curio.js"></script>
+	<script src="sites.js"></script>
+	<script src="intro.js"></script>
+</body>
+</html>

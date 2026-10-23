@@ -116,6 +116,12 @@ jobs:
         with:
           files: android/app/build/outputs/apk/release/*.apk
 
+      # Also attached as curio-android.apk, so the download link in Curio's tour
+      # (releases/latest/download/curio-android.apk) always gets the newest APK.
+      - name: Stable APK name for the latest-release link
+        if: ${{ inputs.release_tag }}
+        run: cp android/app/build/outputs/apk/release/curio-android-*-release.apk android/app/build/outputs/apk/release/curio-android.apk
+
       - name: Attach to the Curio release
         if: ${{ inputs.release_tag }}
         uses: softprops/action-gh-release@v2

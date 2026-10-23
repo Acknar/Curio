@@ -1,6 +1,6 @@
 # Curio handoff
 
-State of the Curio project (Nextcloud app + Android app) at the end of the session of 2026-10-23, and what comes next.
+State of the Curio project (Nextcloud app + Android app) at the end of the session of 2026-10-23 (Curio 2.1.0, Curio for Android 1.2.0), and what comes next.
 
 ## Requests, as written
 
@@ -10,6 +10,20 @@ State of the Curio project (Nextcloud app + Android app) at the end of the sessi
 4. "Can you do a Curio v1.0.5 release on github so I can add the curio-1.0.6.tar.gz on the nextcloud app store to update my nextcloud server" / "v1.0.6 release I meant" / "make it 2.0.0 release actually"
 5. "The new version is on the app store but I have to wait for it to be picked up by my server. While I wait, can you help me add images to the app page on the app store, i can't find any way to edit the page"
 6. "Ok, I will send them over for the next session. I also need you to make the next upload of the app compatible with Nextcloud 35"
+7. "Here is the updated text for the app store : [the description now in `appinfo/info.xml`] The github readme can point to the app store: https://apps.nextcloud.com/apps/curio" / "How can I force my tabdigital server to update the app list to see there is a new version of curio availiable"
+8. "[4 screenshots] Ok, It's updated now and the map shows up again. Here are the photos so you can do the next version. In the next you will be able to add the .apk right? For the map API key, is there a way for all people downloading my app to use my api key to benefit from it without risking it being maxed out by a single user, maybe with a user limit?"
+9. "Ok, can you add an onboarding for the first start of the app to quickly show user around and offer to download the app and tell them how to open it (the security settings in android). Do a similar onboarding process on the app to explain the webclipper capabilities and show the social media setup so the user can set that up. Test the OpenFreeMap, show me the implementation with light and dark mode. If it doesn't work, we'll need the onboarding to also help new users understand how to get an API key to have the map"
+10. "I'd also like you to rework the android app icon to have the same background as the other apps, take the specific blue from nextcloud and remove the transparency"
+
+## Done in 2.1.0 / Android 1.2.0 (requests 9 and 10)
+
+- OpenFreeMap: with no CARTO key, the map uses OpenFreeMap vector styles (`https://tiles.openfreemap.org/styles/positron` and `/dark`) through MapLibre GL 6 inside Leaflet (`@maplibre/maplibre-gl-leaflet`), lazy-loaded as `js/curio-maplibre.js` plus the worker `js/curio-maplibre-worker.js` (copied by `npm run build`). CSP in `PageController` allows `tiles.openfreemap.org`, workers from self and blob. Verified on GitHub runners by `.github/workflows/preview.yml` (renders the map in light and dark at world and city zoom with Playwright, every request 200, force-pushes the PNGs and `report.json` to branch `previews`). It works, so no API key step was added to the onboarding; the CARTO key stays optional and the map notice only shows if the basemap fails to load.
+- Curio first-run tour (`src/App.vue`, per-user flag `curio`/`onboarding_done`, `PUT /api/onboarding`): welcome, adding references, organizing, sharing, and Curio for Android (QR code, download link `https://github.com/Acknar/Curio/releases/latest/download/curio-android.apk`, install steps covering "Allow from this source" and Play Protect, server address). Not shown inside the Android app's WebView for the app step. Replay from Settings > Help.
+- `android.yml` attaches the APK to each release a second time as `curio-android.apk`, which the tour link needs. Releases up to 2.0.1 do not have it; 2.1.0 is the first.
+- Android introduction (`IntroActivity`, `assets/ui/intro.html/.js`, config flag `introDone`): share menu use and pinning, what is read per platform, site sign-ins with live status (`sites.js`, shared with App settings), default board. Opens over Curio on first start after connecting (also for users upgrading from 1.1.0). Replay from App settings > Help. `share_label` translated in `res/values-xx`.
+- App icon: Nextcloud blue gradient background (`#0082C9` to `#30B6FF`), solid white mark, no transparency.
+- All Curio strings translated in the 6 languages, including the folder picker strings that were still English.
+- Tests: `android/tests` 31 passing (new `intro.test.js`). Not yet tested on a phone.
 
 ## Next steps
 
@@ -62,7 +76,7 @@ Branch `claude/exciting-volta-o8u9im` holds all work. `main` is still at the ori
 - GitHub release: https://github.com/Acknar/Curio/releases/tag/v2.0.0 with `curio-2.0.0.tar.gz`. The user uploaded it to the App Store and was waiting for their server to pick it up.
 - After the server updates: paste the CARTO key in Curio Settings; optionally restrict the key to the Nextcloud host in the CARTO dashboard (host only, exact match, list www and other hosts separately).
 
-### Android app (`android/`, version 1.1.0)
+### Android app (`android/`, version 1.2.0; 1.1.0 described below)
 
 - Opens Curio from the user's Nextcloud full screen (MainActivity WebView, first request with HTTP Basic auth using the app password). `assets/ui/inject/curio-page.js` hides the Nextcloud top bar on the Curio page, adds "App settings" under Curio's Settings in the sidebar, reports theme/colours/language, handles back (closes dialogs, detail view, sidebar) and refreshes after a clip.
 - Share target ("Add to Curio"): Curio's own Add reference dialog (`assets/ui/clip.html/.js`) styled with Curio's `src/styles.css` and translated with Curio's `l10n/*.json`, both copied into the APK at build time (Gradle task `copyCurioWeb`). App-only strings in `assets/ui/app-l10n.js` (fr, es, de formal, it, pt, nl).
@@ -74,7 +88,7 @@ Branch `claude/exciting-volta-o8u9im` holds all work. `main` is still at the ori
 
 ## Release process
 
-Releases also carry the Curio for Android APK: `release.yml` calls `android.yml` (a reusable workflow, input `release_tag`), which builds the APK with the cached CI key and attaches it to the same release. Release v2.0.1 (screenshots, new description, Nextcloud 35) is published with `curio-2.0.1.tar.gz` and `curio-android-1.1.0-release.apk`.
+Releases also carry the Curio for Android APK: `release.yml` calls `android.yml` (a reusable workflow, input `release_tag`), which builds the APK with the cached CI key and attaches it to the same release. Release v2.0.1 (screenshots, new description, Nextcloud 35) is published with `curio-2.0.1.tar.gz` and `curio-android-1.1.0-release.apk`. From v2.1.0 the APK is also attached as `curio-android.apk`.
 
 `.github/workflows/release.yml` runs when a push changes `appinfo/info.xml` (or the workflow), or when a `v*` tag is pushed. It reads the version from `info.xml`, validates `info.xml` against the App Store schema, skips if release `v<version>` already exists, otherwise builds `curio-<version>.tar.gz` (top folder `curio/`: appinfo, img, js, l10n, lib, templates, src, CHANGELOG.md, COPYING, README.md, package.json, package-lock.json, webpack.config.js), creates tag `v<version>` on the pushed commit and publishes the release with the matching `CHANGELOG.md` section as notes.
 

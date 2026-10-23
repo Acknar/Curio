@@ -3,6 +3,17 @@
 All notable changes to Curio for Android are documented here. The project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.2.0 - 2026-10-23
+
+### Added
+
+- Introduction on first start, after connecting: how to add references from the share menu of any app (and pin "Add to Curio" there), what is read on Instagram, Pinterest, TikTok, YouTube, X, Reddit and other sites, signing in to Instagram, Facebook, Pinterest, TikTok and X with live sign-in status, and the default board for the share menu. It can be replayed from App settings, under Help.
+- "Add to Curio" in the share menu is translated in French, Spanish, German, Italian, Portuguese and Dutch.
+
+### Changed
+
+- New app icon in the style of Nextcloud's own apps: Nextcloud blue gradient background and a solid white Curio mark, with no transparency.
+
 ## 1.1.0 - 2026-10-23
 
 ### Added

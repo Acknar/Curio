@@ -147,6 +147,10 @@ public class MainActivity extends Activity {
 
 		if (savedInstanceState != null) web.restoreState(savedInstanceState);
 		else loadCurio();
+		// First start after connecting: the introduction opens over Curio.
+		if (savedInstanceState == null && !cfg.optBoolean("introDone", false)) {
+			startActivity(new Intent(this, IntroActivity.class));
+		}
 	}
 
 	private void loadCurio() {

@@ -8,16 +8,17 @@ const { UI, loadScripts, curioAsset } = require('./helpers');
 
 function usedStrings() {
 	const out = new Set();
-	for (const f of ['clip.js', 'connect.js', 'settings.js']) {
+	for (const f of ['clip.js', 'connect.js', 'settings.js', 'sites.js', 'intro.js']) {
 		const s = fs.readFileSync(path.join(UI, f), 'utf8');
 		for (const m of s.matchAll(/\btr\('((?:[^'\\]|\\.)*)'/g)) out.add(m[1].replace(/\\'/g, "'"));
 		for (const m of s.matchAll(/tr\([^)]*\?\s*'([^']+)'\s*:\s*'([^']+)'\)/g)) { out.add(m[1]); out.add(m[2]); }
+		for (const m of s.matchAll(/\breads: '([^']+)'/g)) out.add(m[1]);
 		const tn = /TYPE_NAME = \{([^}]*)\}/.exec(s);
 		if (tn) for (const m of tn[1].matchAll(/:\s*'([^']+)'/g)) out.add(m[1]);
 	}
 	for (const f of fs.readdirSync(UI).filter((x) => x.endsWith('.html'))) {
 		const s = fs.readFileSync(path.join(UI, f), 'utf8');
-		for (const m of s.matchAll(/data-tr(?:-placeholder)?="([^"]*)"/g)) out.add(m[1].replace(/&amp;/g, '&'));
+		for (const m of s.matchAll(/data-(?:tr|tr-placeholder|title)="([^"]*)"/g)) out.add(m[1].replace(/&amp;/g, '&'));
 	}
 	for (const m of fs.readFileSync(path.join(UI, 'extract.js'), 'utf8').matchAll(/progress\('([^']*)'\)/g)) out.add(m[1]);
 	return [...out];

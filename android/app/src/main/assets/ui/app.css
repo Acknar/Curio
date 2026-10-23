@@ -48,3 +48,13 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", U
 .curio .sheet-note a { color: var(--primary); font-weight: 600; }
 .curio .filebox { display: flex; align-items: center; gap: 10px; text-align: left; cursor: default; }
 .curio .toasts .toast.success { border-color: #55b877; }
+
+/* Introduction: Curio's tour layout as a full-screen page, buttons kept in view. */
+.curio .modal.pagemodal.intro { display: flex; flex-direction: column; }
+.curio .intro .mbody { flex: 1; }
+.curio .intro .mfoot { position: sticky; bottom: 0; background: var(--surface); }
+.curio .intro .mhead .close { margin-left: auto; }
+.curio .intro-platforms .siterow .label span { display: block; line-height: 1.4; margin-top: 1px; }
+.curio .intro-platforms .owner-av { font-size: 10.5px; }
+.curio .intro-after { margin: 12px 0 0; }
+.curio .intro .tour-list li > span + span { flex: 1; height: auto; display: block; background: none; color: inherit; border-radius: 0; }

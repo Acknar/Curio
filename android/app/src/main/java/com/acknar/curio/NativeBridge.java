@@ -209,6 +209,11 @@ class NativeBridge {
 				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
 	}
 
+	@JavascriptInterface
+	public void openIntro() {
+		activity.runOnUiThread(() -> activity.startActivity(new Intent(activity, IntroActivity.class)));
+	}
+
 	void resolve(String id, JSONObject result) {
 		final String js = "window.CurioNative&&CurioNative._resolve(" + JSONObject.quote(id) + "," + JSONObject.quote(result.toString()) + ")";
 		web.post(() -> web.evaluateJavascript(js, null));

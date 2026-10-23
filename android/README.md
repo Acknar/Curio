@@ -30,6 +30,10 @@ endpoints, including `upload-video`). 2.0.0 adds the map tiles key.
 - **Same result as the web clipper.** Caption cleanup (engagement counts, quotes,
   @mentions, emoji, headline + description split), hashtag to tag matching and
   location detection are the web clipper's own code.
+- **Introduction.** On first start, after connecting, a short introduction
+  shows how to use the share menu, what is read on each platform, the site
+  sign-ins (with live status) and the default board. Replay it from App
+  settings > Help.
 - **Site sign-ins.** Optionally sign in to Instagram, Facebook, Pinterest, TikTok
   or X in App settings, on the site's own page. The share menu then reads posts
   the way you see them: private accounts, full carousels, reels as video files.
@@ -64,21 +68,28 @@ is used directly.
 
 ## Setup
 
-1. Install the APK (see Build). Android asks to allow installs from the app you
-   open it with (Files, browser) the first time.
+1. Download `curio-android.apk` from the latest GitHub release
+   (https://github.com/Acknar/Curio/releases/latest/download/curio-android.apk),
+   or scan the QR code in Curio's tour (Settings > Help > Get the Android app).
+   Android asks to allow installs from the app you open it with (Files,
+   browser) the first time: tap Settings, turn on "Allow from this source", go
+   back and tap Install.
 2. Open Curio, enter your Nextcloud address and tap **Sign in with Nextcloud**.
    Sign in on your server's page and grant access. Nextcloud creates an app
    password named "Curio for Android (device)" that you can revoke under
    Security > Devices & sessions. Entering an app password by hand also works.
-3. Optional: sidebar > App settings > Site sign-ins > Instagram.
+3. The introduction walks through the share menu, site sign-ins and the default
+   board. Site sign-ins are also in sidebar > App settings.
 4. In any app, Share > Add to Curio. Long-press it in the share menu to pin it.
 
 ## Build
 
 The APK is built by GitHub Actions (`.github/workflows/android.yml`) on every
 push that touches `android/`. Download it from the run's **Artifacts**
-(`curio-android-apk`). Pushing a tag named `android-v1.0.0` also publishes it as
-a GitHub release.
+(`curio-android-apk`). Every Curio release (`.github/workflows/release.yml`)
+also builds it and attaches it to the release twice: as
+`curio-android-<version>-release.apk` and as `curio-android.apk`, the stable name
+behind the `releases/latest/download/curio-android.apk` link.
 
 Locally, with the Android SDK installed (Android Studio, or the command-line
 tools with platform 35):
@@ -126,6 +137,7 @@ reference payload that gets posted), and the Nextcloud Login Flow v2.
   - `MainActivity` - Curio from the server, full screen, with a minimal page bridge.
   - `ShareActivity` - share target; turns the intent into a payload for the dialog.
   - `ConnectActivity`, `SettingsActivity` - first-run connection and app settings.
+  - `IntroActivity` - introduction shown once after connecting (config flag `introDone`).
   - `SiteLoginActivity` - in-app sign-in to a social site.
   - `WebShellActivity`, `NativeBridge` - WebView host and the JavaScript bridge.
   - `Http` - native HTTP (no CORS, custom User-Agent, site cookies, multipart upload from a URL or a shared file).
@@ -134,6 +146,7 @@ reference payload that gets posted), and the Nextcloud Login Flow v2.
   - `clip.html/.js` - the share dialog (Curio's Add reference dialog).
   - `connect.html/.js` - connection (Nextcloud Login Flow v2 or app password).
   - `settings.html/.js` - app settings.
+  - `intro.html/.js` - the introduction; `sites.js` - site sign-in rows shared with settings.
   - `inject/curio-page.js` - injected into the Curio page: hides Nextcloud's top bar, adds App settings, reports theme and language, back handling.
   - `look.js`, `app.css`, `app-l10n.js` - Curio's theme, icons and translations for the app's screens.
 - `../src/styles.css`, `../l10n/*.json` - copied into the APK at build time (Gradle task `copyCurioWeb`).

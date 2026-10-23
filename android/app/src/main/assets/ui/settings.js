@@ -1,42 +1,15 @@
 // settings.js - the app's own settings: default board for the share menu, site
-// sign-ins (Instagram, Facebook...) and the Nextcloud connection.
+// sign-ins (sites.js), the introduction and the Nextcloud connection.
 
 /* global Android, CurioNative, CURIO, Look */
 
 const $ = (id) => document.getElementById(id);
 const tr = (s, v) => Look.tr(s, v);
 
-const SITES = [
-	{ id: 'instagram', name: 'Instagram', color: '#c13584' },
-	{ id: 'facebook', name: 'Facebook', color: '#1877f2' },
-	{ id: 'pinterest', name: 'Pinterest', color: '#e60023' },
-	{ id: 'tiktok', name: 'TikTok', color: '#111111' },
-	{ id: 'x', name: 'X', color: '#444444' },
-];
-
 window.CurioApp = {
 	back() { return false; },
-	refresh() { renderSites(); },
+	refresh() { renderSites($('sSites')); },
 };
-
-function renderSites() {
-	const sessions = CurioNative.siteSessions();
-	const box = $('sSites');
-	box.innerHTML = '';
-	for (const s of SITES) {
-		const on = !!sessions[s.id];
-		const row = document.createElement('div');
-		row.className = 'siterow';
-		row.innerHTML = '<span class="owner-av" style="background:' + s.color + '">' + s.name.slice(0, 2).toUpperCase() + '</span>'
-			+ '<span class="label"><b>' + s.name + '</b><span class="' + (on ? 'on' : '') + '">' + tr(on ? 'Signed in' : 'Not signed in') + '</span></span>';
-		const btn = document.createElement('button');
-		btn.className = 'btn';
-		btn.textContent = tr(on ? 'Open' : 'Sign in');
-		btn.addEventListener('click', () => Android.openSiteLogin(s.id));
-		row.appendChild(btn);
-		box.appendChild(row);
-	}
-}
 
 async function renderBoards(cfg) {
 	const selEl = $('sBoard');
@@ -61,18 +34,19 @@ Look.init($('root'));
 const cfg = CURIO.getConfig();
 $('sWho').textContent = tr('{user} on {server}', { user: cfg.user || '', server: (cfg.server || '').replace(/^https?:\/\//, '') });
 $('sAbout').textContent = 'Curio for Android ' + (CurioNative.appInfo().version || '');
-renderSites();
+renderSites($('sSites'));
 renderBoards(cfg);
 
 $('btnBack').addEventListener('click', () => Android.close());
 $('btnDone').addEventListener('click', () => Android.close());
+$('sIntro').addEventListener('click', () => Android.openIntro());
 $('sBoard').addEventListener('change', () => {
 	const v = $('sBoard').value;
 	CURIO.setConfig({ defaultBoardId: v ? Number(v) : null });
 });
 $('sSignOut').addEventListener('click', () => {
 	Android.clearSiteSessions();
-	renderSites();
+	renderSites($('sSites'));
 	Android.toast(tr('Signed out of all sites'));
 });
 $('sDisconnect').addEventListener('click', () => {
