@@ -2,7 +2,7 @@
 // menu works, what it reads on each platform with the site sign-ins, and the default board.
 // Steps are the <section data-step> blocks of intro.html.
 
-/* global Android, CurioNative, CURIO, Look */
+/* global Android, CurioNative, CURIO, Look, brandAvatar */
 
 const $ = (id) => document.getElementById(id);
 const tr = (s, v) => Look.tr(s, v);
@@ -10,14 +10,14 @@ const tr = (s, v) => Look.tr(s, v);
 // What the share menu reads on each platform; `site` (an id from NativeBridge.SITES)
 // adds the sign-in status and button.
 const PLATFORMS = [
-	{ name: 'Instagram', site: 'instagram', color: '#c13584', reads: 'Caption, every photo of a carousel, reels as videos' },
-	{ name: 'Pinterest', site: 'pinterest', color: '#e60023', reads: 'Title, description and the full-size image' },
-	{ name: 'TikTok', site: 'tiktok', color: '#111111', reads: 'Caption and cover picture' },
-	{ name: 'Facebook', site: 'facebook', color: '#1877f2', reads: 'Post text and pictures' },
-	{ name: 'X', site: 'x', color: '#444444', reads: 'Post text and pictures' },
-	{ name: 'YouTube, Vimeo', short: 'YT', color: '#ff0033', reads: 'Title, description and the video, playable in Curio' },
-	{ name: 'Reddit, Threads', short: 'RE', color: '#ff4500', reads: 'Post text and pictures' },
-	{ name: 'Any website', short: 'www', color: '#0082c9', reads: 'Title, description and main image' },
+	{ name: 'Instagram', site: 'instagram', icons: ['instagram'], reads: 'Caption, every photo of a carousel, reels as videos' },
+	{ name: 'Pinterest', site: 'pinterest', icons: ['pinterest'], reads: 'Title, description and the full-size image' },
+	{ name: 'TikTok', site: 'tiktok', icons: ['tiktok'], reads: 'Caption and cover picture' },
+	{ name: 'Facebook', site: 'facebook', icons: ['facebook'], reads: 'Post text and pictures' },
+	{ name: 'X', site: 'x', icons: ['x'], reads: 'Post text and pictures' },
+	{ name: 'YouTube, Vimeo', icons: ['youtube', 'vimeo'], reads: 'Title, description and the video, playable in Curio' },
+	{ name: 'Reddit, Threads', icons: ['reddit', 'threads'], reads: 'Post text and pictures' },
+	{ name: 'Any website', icons: ['web'], reads: 'Title, description and main image' },
 ];
 
 const steps = [...document.querySelectorAll('section[data-step]')];
@@ -51,10 +51,7 @@ function renderPlatforms() {
 	for (const p of PLATFORMS) {
 		const row = document.createElement('div');
 		row.className = 'siterow';
-		const av = document.createElement('span');
-		av.className = 'owner-av';
-		av.style.background = p.color;
-		av.textContent = p.short || p.name.slice(0, 2).toUpperCase();
+		row.insertAdjacentHTML('beforeend', brandAvatar(p.icons));
 		const label = document.createElement('span');
 		label.className = 'label';
 		const b = document.createElement('b');
@@ -62,7 +59,7 @@ function renderPlatforms() {
 		const sub = document.createElement('span');
 		sub.textContent = tr(p.reads);
 		label.append(b, sub);
-		row.append(av, label);
+		row.append(label);
 		if (p.site) {
 			const on = !!sessions[p.site];
 			const st = document.createElement('span');

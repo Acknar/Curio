@@ -2,14 +2,14 @@
 // and the introduction. Each row shows the live sign-in state and opens the site's
 // own page in SiteLoginActivity.
 
-/* global Android, CurioNative, Look */
+/* global Android, CurioNative, Look, brandAvatar */
 
 const SITES = [
-	{ id: 'instagram', name: 'Instagram', color: '#c13584' },
-	{ id: 'facebook', name: 'Facebook', color: '#1877f2' },
-	{ id: 'pinterest', name: 'Pinterest', color: '#e60023' },
-	{ id: 'tiktok', name: 'TikTok', color: '#111111' },
-	{ id: 'x', name: 'X', color: '#444444' },
+	{ id: 'instagram', name: 'Instagram' },
+	{ id: 'facebook', name: 'Facebook' },
+	{ id: 'pinterest', name: 'Pinterest' },
+	{ id: 'tiktok', name: 'TikTok' },
+	{ id: 'x', name: 'X' },
 ];
 
 function renderSites(box) {
@@ -20,7 +20,7 @@ function renderSites(box) {
 		const on = !!sessions[s.id];
 		const row = document.createElement('div');
 		row.className = 'siterow';
-		row.innerHTML = '<span class="owner-av" style="background:' + s.color + '">' + s.name.slice(0, 2).toUpperCase() + '</span>'
+		row.innerHTML = brandAvatar([s.id])
 			+ '<span class="label"><b>' + s.name + '</b><span class="' + (on ? 'on' : '') + '">' + tr(on ? 'Signed in' : 'Not signed in') + '</span></span>';
 		const btn = document.createElement('button');
 		btn.className = 'btn';

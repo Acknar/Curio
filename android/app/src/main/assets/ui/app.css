@@ -55,7 +55,6 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", U
 .curio .intro .mfoot { position: sticky; bottom: 0; background: var(--surface); }
 .curio .intro .mhead .close { margin-left: auto; }
 .curio .intro-platforms .siterow .label span { display: block; line-height: 1.4; margin-top: 1px; }
-.curio .intro-platforms .owner-av { font-size: 10.5px; }
 .curio .intro-after { margin: 12px 0 0; }
 .curio .intro .tour-list li > span + span { flex: 1; height: auto; display: block; background: none; color: inherit; border-radius: 0; }
 .curio .intro-privacy { margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; }
@@ -71,3 +70,11 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", U
 .curio .intro .tour-welcome { padding-top: clamp(150px, 26vh, 240px); }
 .curio .intro-platforms .siterow .label .signed { font-size: 12px; margin-top: 2px; }
 .curio .intro-platforms .siterow .label .signed.on { color: var(--primary); font-weight: 600; }
+
+/* Platform logos (brand-icons.js): white glyph in a circle of the platform colour. */
+.curio .brand-stack { position: relative; flex: 0 0 34px; width: 34px; height: 34px; }
+.curio .brand-av { position: absolute; left: 0; top: 0; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 14%, transparent); }
+.curio .brand-av svg { width: 18px; height: 18px; display: block; }
+.curio .brand-stack.n2 .brand-av { width: 23px; height: 23px; box-shadow: 0 0 0 2px var(--surface); }
+.curio .brand-stack.n2 .brand-av + .brand-av { left: 13px; top: 13px; }
+.curio .brand-stack.n2 .brand-av svg { width: 12px; height: 12px; }

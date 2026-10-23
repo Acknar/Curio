@@ -147,6 +147,7 @@ reference payload that gets posted), and the Nextcloud Login Flow v2.
   - `connect.html/.js` - connection (Nextcloud Login Flow v2 or app password).
   - `settings.html/.js` - app settings.
   - `intro.html/.js` - the introduction; `sites.js` - site sign-in rows shared with settings.
+  - `brand-icons.js` - platform logos (paths from Simple Icons, https://simpleicons.org, CC0-1.0).
   - `inject/curio-page.js` - injected into the Curio page: hides Nextcloud's top bar, adds App settings, reports theme and language, back handling.
   - `look.js`, `app.css`, `app-l10n.js` - Curio's theme, icons and translations for the app's screens.
 - `../src/styles.css`, `../l10n/*.json` - copied into the APK at build time (Gradle task `copyCurioWeb`).

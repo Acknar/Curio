@@ -8,6 +8,7 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Introduction: swipe left or right to move between screens. New first screen explaining what Curio does, with larger text over a faded picture of a Curio board. "What Curio reads" and the site sign-ins are one screen: each platform shows what is read and, for Instagram, Pinterest, TikTok, Facebook and X, its sign-in status and button. It states that nothing is posted or shared to those sites and that only the shared post is read (also in App settings).
+- Platform logos in their brand colours on the introduction's "What Curio reads" screen and in App settings' site sign-ins (icons from Simple Icons, CC0).
 - Only one welcome screen: Curio's own tour, shown inside the app after the introduction, now starts at "Add references".
 
 ## 1.2.0 - 2026-10-23
