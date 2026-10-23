@@ -40,24 +40,24 @@ test('introduction: steps, site sign-ins, default board, done flag', async () =>
 	assert.deepEqual(visible(doc), ['welcome']);
 	assert.equal(doc.getElementById('iTitle').textContent, 'Welcome to Curio');
 	assert.ok(doc.getElementById('btnPrev').classList.contains('hidden'));
-	assert.equal(doc.querySelectorAll('#iDots button').length, 5);
+	assert.equal(doc.querySelectorAll('#iDots button').length, 4);
+	assert.ok(doc.querySelector('.intro').classList.contains('is-welcome'), 'welcome picture shown');
 
 	doc.getElementById('btnNext').click();
 	assert.deepEqual(visible(doc), ['share']);
+	assert.ok(!doc.querySelector('.intro').classList.contains('is-welcome'));
 	doc.getElementById('btnNext').click();
 	assert.deepEqual(visible(doc), ['reads']);
-	assert.match(doc.getElementById('iPlatforms').textContent, /Instagram.*carousel/);
-
-	doc.getElementById('btnNext').click();
-	assert.deepEqual(visible(doc), ['sites']);
-	const insta = doc.querySelector('#iSites .siterow');
-	assert.match(insta.textContent, /Instagram\s*Not signed in/);
-	insta.querySelector('button').click();
+	const rows = [...doc.querySelectorAll('#iPlatforms .siterow')];
+	assert.match(rows[0].textContent, /Instagram.*carousel.*Not signed in/);
+	assert.equal(rows.filter((r) => r.querySelector('button')).length, 5, 'sign-in buttons for the five sites');
+	rows[0].querySelector('button').click();
 	assert.deepEqual(rec.logins, ['instagram']);
 	// Back from the sign-in page: the row shows the new state.
 	rec.sessions.instagram = true;
 	w.CurioApp.refresh();
-	assert.match(doc.querySelector('#iSites .siterow').textContent, /Signed in/);
+	assert.match(doc.querySelector('#iPlatforms .siterow').textContent, /Signed in/);
+	assert.equal(doc.querySelector('#iPlatforms .siterow button').textContent, 'Open');
 
 	doc.getElementById('btnNext').click();
 	assert.deepEqual(visible(doc), ['board']);
@@ -71,8 +71,8 @@ test('introduction: steps, site sign-ins, default board, done flag', async () =>
 
 	// Android back goes to the previous step, then leaves.
 	assert.equal(w.CurioApp.back(), true);
-	assert.deepEqual(visible(doc), ['sites']);
-	doc.querySelectorAll('#iDots button')[4].click();
+	assert.deepEqual(visible(doc), ['reads']);
+	doc.querySelectorAll('#iDots button')[3].click();
 	doc.getElementById('btnStart').click();
 	assert.equal(rec.config.introDone, true);
 	assert.ok(rec.closed);

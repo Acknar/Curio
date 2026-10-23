@@ -661,7 +661,7 @@
 				<div class="mfoot tour-foot">
 					<div class="tour-dots"><button v-for="(st, i) in tourSteps" :key="st.k" :class="{ on: i === tourStep }" :title="st.title" @click="tourStep = i" /></div>
 					<button v-if="tourStep > 0" class="btn" @click="tourStep--">{{ tr('Back') }}</button>
-					<button v-if="tourStep < tourSteps.length - 1" class="btn primary" @click="tourStep++">{{ tourStep === 0 ? tr('Take the tour') : tr('Next') }}</button>
+					<button v-if="tourStep < tourSteps.length - 1" class="btn primary" @click="tourStep++">{{ tourSteps[tourStep].k === 'welcome' ? tr('Take the tour') : tr('Next') }}</button>
 					<button v-else class="btn primary" @click="finishTour">{{ tr('Start using Curio') }}</button>
 				</div>
 			</div>
@@ -801,10 +801,11 @@ export default {
 				{ k: 'welcome', icon: 'sparkle', title: this.tr('Welcome to Curio') },
 				{ k: 'add', icon: 'image', title: this.tr('Add references') },
 				{ k: 'organize', icon: 'tag', title: this.tr('Organize and share') },
+				{ k: 'app', icon: 'phone', title: this.tr('Curio on your phone') },
 			]
-			// Inside the Android app the app step is pointless; it has its own introduction.
-			if (!this.inAndroidApp) steps.push({ k: 'app', icon: 'phone', title: this.tr('Curio on your phone') })
-			return steps
+			// The Android app shows its own introduction (with the welcome) first, and
+			// offering the app inside the app is pointless.
+			return this.inAndroidApp ? steps.filter(s => s.k !== 'welcome' && s.k !== 'app') : steps
 		},
 		logoSvg() {
 			return '<svg viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect x="25" y="25" width="96" height="124" rx="18"/><rect x="25" y="163" width="96" height="68" rx="18"/><rect x="135" y="25" width="96" height="68" rx="18"/><rect x="135" y="107" width="96" height="124" rx="18"/></g></svg>'

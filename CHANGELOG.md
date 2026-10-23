@@ -14,7 +14,7 @@ All notable changes to Curio are documented here. The format is based on
 ### Changed
 
 - New first-run welcome screen: larger, more spaced text over a faded picture of a Curio board, and a "Take the tour" button. The organize and share steps are merged into one.
-- On phones the tour leaves out what needs a computer (dropping files onto the board, CSV export) and, inside the Android app, mentions sharing to Curio from other apps.
+- On phones the tour leaves out what needs a computer (dropping files onto the board, CSV export) and, inside the Android app, mentions sharing to Curio from other apps. Inside the Android app the tour skips its welcome screen, which the app's own introduction already shows.
 
 - First-run tour: swipe left or right to move between steps on touch screens. The last install step now says to sign in with your Nextcloud server address instead of showing the address.
 - App Store description: shorter opening paragraph.

@@ -15,10 +15,12 @@
 			<div class="mbody tour-body">
 				<div class="tour-art" id="iArt"></div>
 
-				<section data-step="welcome" data-title="Welcome to Curio" data-art="logo">
-					<p class="tour-lead" data-tr="Curio turns the images, links, videos and notes you collect into visual boards you can filter, tag and share.">Curio turns the images, links, videos and notes you collect into visual boards you can filter, tag and share.</p>
-					<p class="tour-lead" data-tr="Paste a link from Pinterest, Instagram, YouTube or any website and it pulls in the picture, title and a snapshot for you. Upload your own photos, drop in a PDF, or jot a quick note.">Paste a link from Pinterest, Instagram, YouTube or any website and it pulls in the picture, title and a snapshot for you. Upload your own photos, drop in a PDF, or jot a quick note.</p>
-					<p class="tour-lead" data-tr="On your phone, you can also add from the share menu of any app. The next screens show how.">On your phone, you can also add from the share menu of any app. The next screens show how.</p>
+				<section data-step="welcome" data-title="Welcome to Curio" class="tour-welcome">
+					<div class="tw-logo" id="iLogo"></div>
+					<h1 class="tw-title" data-tr="Welcome to Curio">Welcome to Curio</h1>
+					<p class="tw-lead" data-tr="Curio turns the images, links, videos and notes you collect into visual boards you can filter, tag and share.">Curio turns the images, links, videos and notes you collect into visual boards you can filter, tag and share.</p>
+					<p class="tw-text" data-tr="Paste a link from Pinterest, Instagram, YouTube or any website and it pulls in the picture, title and a snapshot for you. Upload your own photos, drop in a PDF, or jot a quick note.">Paste a link from Pinterest, Instagram, YouTube or any website and it pulls in the picture, title and a snapshot for you. Upload your own photos, drop in a PDF, or jot a quick note.</p>
+					<p class="tw-note" data-tr="On your phone, you can also add from the share menu of any app. The next screens show how.">On your phone, you can also add from the share menu of any app. The next screens show how.</p>
 				</section>
 
 				<section data-step="share" data-title="Add from any app" data-art="share">
@@ -31,14 +33,10 @@
 				</section>
 
 				<section data-step="reads" data-title="What Curio reads" data-art="text">
+					<p class="tour-lead" data-tr="Share a post from any of these apps and Curio fills in the reference. Signing in is optional: some sites show more to people who are signed in, such as private accounts, full carousels and reels.">Share a post from any of these apps and Curio fills in the reference. Signing in is optional: some sites show more to people who are signed in, such as private accounts, full carousels and reels.</p>
+					<div class="sheet-note intro-privacy" data-tr="Nothing is posted or shared to these sites. Curio reads only the post you share, to turn it into a reference on your board, and takes nothing else from your account.">Nothing is posted or shared to these sites. Curio reads only the post you share, to turn it into a reference on your board, and takes nothing else from your account.</div>
 					<div class="intro-platforms" id="iPlatforms"></div>
 					<p class="hint intro-after" data-tr="Hashtags in a caption become tag suggestions, and a place named in it is put on the map.">Hashtags in a caption become tag suggestions, and a place named in it is put on the map.</p>
-				</section>
-
-				<section data-step="sites" data-title="Sign in to your sites" data-art="lock">
-					<p class="tour-lead" data-tr="Some sites show more to people who are signed in. Sign in here once and the share menu reads posts the way you see them: private accounts, full carousels, reels. This is optional.">Some sites show more to people who are signed in. Sign in here once and the share menu reads posts the way you see them: private accounts, full carousels, reels. This is optional.</p>
-					<div class="sheet-note intro-privacy" data-tr="Nothing is posted or shared to these sites. Curio reads only the post you share, to turn it into a reference on your board, and takes nothing else from your account.">Nothing is posted or shared to these sites. Curio reads only the post you share, to turn it into a reference on your board, and takes nothing else from your account.</div>
-					<div id="iSites"></div>
 					<p class="hint intro-after" data-tr="Curio never sees these passwords; the sign-in stays on this phone. You can change this later in App settings.">Curio never sees these passwords; the sign-in stays on this phone. You can change this later in App settings.</p>
 				</section>
 
@@ -64,7 +62,6 @@
 	<script src="app-l10n.js"></script>
 	<script src="look.js"></script>
 	<script src="curio.js"></script>
-	<script src="sites.js"></script>
 	<script src="intro.js"></script>
 </body>
 </html>

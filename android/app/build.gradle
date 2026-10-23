@@ -13,6 +13,7 @@ def hasReleaseKey = ksFile != null && new File(ksFile).exists()
 def curioWebDir = layout.buildDirectory.dir('generated/curio-web').get().asFile
 tasks.register('copyCurioWeb', Copy) {
 	from(rootProject.file('../src/styles.css')) { into 'curio' }
+	from(rootProject.file('../img/tour-welcome.webp')) { into 'curio' }
 	from(rootProject.file('../l10n')) {
 		include '*.json'
 		into 'curio/l10n'

@@ -8,6 +8,7 @@ on:
     paths:
       - 'android/**'
       - 'src/styles.css'
+      - 'img/tour-welcome.webp'
       - 'l10n/**'
       - '.github/workflows/android.yml'
     tags:
@@ -99,7 +100,7 @@ jobs:
         run: |
           apk=$(ls *.apk)
           unzip -l "$apk" | grep -E "assets/(curio|ui)/" | awk '{print $4}'
-          for f in assets/curio/styles.css assets/curio/l10n/fr.json assets/ui/clip.html assets/ui/inject/curio-page.js; do
+          for f in assets/curio/styles.css assets/curio/tour-welcome.webp assets/curio/l10n/fr.json assets/ui/clip.html assets/ui/inject/curio-page.js; do
             unzip -l "$apk" | grep -q " $f$" || { echo "Missing $f"; exit 1; }
           done
           keytool -printcert -jarfile "$apk" | grep -E "Owner|SHA256:" | head -2

@@ -50,7 +50,7 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", U
 .curio .toasts .toast.success { border-color: #55b877; }
 
 /* Introduction: Curio's tour layout as a full-screen page, buttons kept in view. */
-.curio .modal.pagemodal.intro { display: flex; flex-direction: column; }
+.curio .modal.pagemodal.intro { display: flex; flex-direction: column; overflow: visible; }
 .curio .intro .mbody { flex: 1; }
 .curio .intro .mfoot { position: sticky; bottom: 0; background: var(--surface); }
 .curio .intro .mhead .close { margin-left: auto; }
@@ -59,3 +59,15 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", U
 .curio .intro-after { margin: 12px 0 0; }
 .curio .intro .tour-list li > span + span { flex: 1; height: auto; display: block; background: none; color: inherit; border-radius: 0; }
 .curio .intro-privacy { margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; }
+
+/* Introduction welcome: the board picture fades into the page behind Curio's welcome text. */
+.curio .intro { position: relative; }
+.curio .intro.is-welcome::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 100vh; z-index: 0; background: url("../curio/tour-welcome.webp") center top / 100% auto no-repeat; opacity: .9; }
+.curio .intro.is-welcome::after { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 100vh; z-index: 0; background: linear-gradient(to bottom, color-mix(in srgb, var(--surface) 15%, transparent) 0%, color-mix(in srgb, var(--surface) 72%, transparent) 22%, var(--surface) 42%); }
+.curio .intro.is-welcome .mhead { position: absolute; top: 0; left: 0; right: 0; background: none; }
+.curio .intro.is-welcome .mhead h2 { visibility: hidden; }
+.curio .intro.is-welcome .mhead .close { background: color-mix(in srgb, var(--surface) 75%, transparent); border-radius: 50%; }
+.curio .intro.is-welcome .mbody, .curio .intro.is-welcome .mfoot { position: relative; z-index: 1; }
+.curio .intro .tour-welcome { padding-top: clamp(150px, 26vh, 240px); }
+.curio .intro-platforms .siterow .label .signed { font-size: 12px; margin-top: 2px; }
+.curio .intro-platforms .siterow .label .signed.on { color: var(--primary); font-weight: 600; }

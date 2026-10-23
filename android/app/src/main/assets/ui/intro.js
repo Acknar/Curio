@@ -1,18 +1,22 @@
 // intro.js - shown once after connecting (and from App settings): how the share
-// menu works, what it reads on each platform, site sign-ins and the default board.
+// menu works, what it reads on each platform with the site sign-ins, and the default board.
 // Steps are the <section data-step> blocks of intro.html.
 
-/* global Android, CURIO, Look, renderSites */
+/* global Android, CurioNative, CURIO, Look */
 
 const $ = (id) => document.getElementById(id);
 const tr = (s, v) => Look.tr(s, v);
 
+// What the share menu reads on each platform; `site` (an id from NativeBridge.SITES)
+// adds the sign-in status and button.
 const PLATFORMS = [
-	{ name: 'Instagram', color: '#c13584', reads: 'Caption, every photo of a carousel, reels as videos' },
-	{ name: 'Pinterest', color: '#e60023', reads: 'Title, description and the full-size image' },
-	{ name: 'TikTok', color: '#111111', reads: 'Caption and cover picture' },
+	{ name: 'Instagram', site: 'instagram', color: '#c13584', reads: 'Caption, every photo of a carousel, reels as videos' },
+	{ name: 'Pinterest', site: 'pinterest', color: '#e60023', reads: 'Title, description and the full-size image' },
+	{ name: 'TikTok', site: 'tiktok', color: '#111111', reads: 'Caption and cover picture' },
+	{ name: 'Facebook', site: 'facebook', color: '#1877f2', reads: 'Post text and pictures' },
+	{ name: 'X', site: 'x', color: '#444444', reads: 'Post text and pictures' },
 	{ name: 'YouTube, Vimeo', short: 'YT', color: '#ff0033', reads: 'Title, description and the video, playable in Curio' },
-	{ name: 'X, Reddit, Threads, Facebook', short: 'X', color: '#444444', reads: 'Post text and pictures' },
+	{ name: 'Reddit, Threads', short: 'RE', color: '#ff4500', reads: 'Post text and pictures' },
 	{ name: 'Any website', short: 'www', color: '#0082c9', reads: 'Title, description and main image' },
 ];
 
@@ -25,7 +29,9 @@ function show(i) {
 	const cur = steps[step];
 	$('iTitle').textContent = tr(cur.getAttribute('data-title'));
 	const art = cur.getAttribute('data-art');
-	$('iArt').innerHTML = art === 'logo' ? Look.logo(30) : Look.icon(art, 30);
+	$('iArt').classList.toggle('hidden', !art);
+	$('iArt').innerHTML = art ? Look.icon(art, 30) : '';
+	document.querySelector('.intro').classList.toggle('is-welcome', cur.dataset.step === 'welcome');
 	[...$('iDots').children].forEach((d, k) => d.classList.toggle('on', k === step));
 	$('btnPrev').classList.toggle('hidden', step === 0);
 	$('btnNext').classList.toggle('hidden', step === steps.length - 1);
@@ -40,6 +46,8 @@ function finish() {
 
 function renderPlatforms() {
 	const box = $('iPlatforms');
+	const sessions = CurioNative.siteSessions();
+	box.innerHTML = '';
 	for (const p of PLATFORMS) {
 		const row = document.createElement('div');
 		row.className = 'siterow';
@@ -55,6 +63,18 @@ function renderPlatforms() {
 		sub.textContent = tr(p.reads);
 		label.append(b, sub);
 		row.append(av, label);
+		if (p.site) {
+			const on = !!sessions[p.site];
+			const st = document.createElement('span');
+			st.className = 'signed' + (on ? ' on' : '');
+			st.textContent = tr(on ? 'Signed in' : 'Not signed in');
+			sub.after(st);
+			const btn = document.createElement('button');
+			btn.className = 'btn';
+			btn.textContent = tr(on ? 'Open' : 'Sign in');
+			btn.addEventListener('click', () => Android.openSiteLogin(p.site));
+			row.appendChild(btn);
+		}
 		box.appendChild(row);
 	}
 }
@@ -83,7 +103,7 @@ window.CurioApp = {
 		if (step > 0) { show(step - 1); return true; }
 		return false;
 	},
-	refresh() { renderSites($('iSites')); },
+	refresh() { renderPlatforms(); },
 };
 
 Look.init($('root'));
@@ -94,8 +114,8 @@ steps.forEach((s, k) => {
 	d.addEventListener('click', () => show(k));
 	$('iDots').appendChild(d);
 });
+$('iLogo').innerHTML = Look.logo(30);
 renderPlatforms();
-renderSites($('iSites'));
 renderBoards();
 show(0);
 
