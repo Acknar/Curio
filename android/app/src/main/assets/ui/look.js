@@ -106,7 +106,7 @@ const Look = {
 	},
 
 	logo(s) {
-		return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect x="25" y="25" width="96" height="124" rx="18"/><rect x="25" y="163" width="96" height="68" rx="18" fill-opacity="0.55"/><rect x="135" y="25" width="96" height="68" rx="18" fill-opacity="0.55"/><rect x="135" y="107" width="96" height="124" rx="18"/></g></svg>';
+		return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect x="25" y="25" width="96" height="124" rx="18"/><rect x="25" y="163" width="96" height="68" rx="18"/><rect x="135" y="25" width="96" height="68" rx="18"/><rect x="135" y="107" width="96" height="124" rx="18"/></g></svg>';
 	},
 };
 

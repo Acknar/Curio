@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The Curio four-tile mark (img/app.svg, 256 units) scaled into the 108dp
-     adaptive-icon canvas, inside the 66dp safe zone. -->
+<!-- The Curio four-tile mark (img/app.svg, 256 units), solid white, scaled to 41dp
+     in the 108dp adaptive-icon canvas so it sits well inside the round mask with a
+     margin like the other Nextcloud apps. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
 	android:width="108dp"
 	android:height="108dp"
 	android:viewportWidth="108"
 	android:viewportHeight="108">
 	<group
-		android:scaleX="0.29"
-		android:scaleY="0.29"
-		android:translateX="16.88"
-		android:translateY="16.88">
+		android:scaleX="0.2"
+		android:scaleY="0.2"
+		android:translateX="28.4"
+		android:translateY="28.4">
 		<path android:fillColor="#FFFFFF" android:pathData="M43,25h60a18,18 0,0 1,18 18v88a18,18 0,0 1,-18 18h-60a18,18 0,0 1,-18 -18v-88a18,18 0,0 1,18 -18z" />
-		<path android:fillColor="#FFFFFF" android:fillAlpha="0.55" android:pathData="M43,163h60a18,18 0,0 1,18 18v32a18,18 0,0 1,-18 18h-60a18,18 0,0 1,-18 -18v-32a18,18 0,0 1,18 -18z" />
-		<path android:fillColor="#FFFFFF" android:fillAlpha="0.55" android:pathData="M153,25h60a18,18 0,0 1,18 18v32a18,18 0,0 1,-18 18h-60a18,18 0,0 1,-18 -18v-32a18,18 0,0 1,18 -18z" />
+		<path android:fillColor="#FFFFFF" android:pathData="M43,163h60a18,18 0,0 1,18 18v32a18,18 0,0 1,-18 18h-60a18,18 0,0 1,-18 -18v-32a18,18 0,0 1,18 -18z" />
+		<path android:fillColor="#FFFFFF" android:pathData="M153,25h60a18,18 0,0 1,18 18v32a18,18 0,0 1,-18 18h-60a18,18 0,0 1,-18 -18v-32a18,18 0,0 1,18 -18z" />
 		<path android:fillColor="#FFFFFF" android:pathData="M153,107h60a18,18 0,0 1,18 18v88a18,18 0,0 1,-18 18h-60a18,18 0,0 1,-18 -18v-88a18,18 0,0 1,18 -18z" />
 	</group>
 </vector>

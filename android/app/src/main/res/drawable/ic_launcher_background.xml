@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Nextcloud's blue gradient (#0082c9 to #30b6ff, bottom left to top right), as on
+     the Nextcloud apps' launcher icons. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-	<solid android:color="#0069C2" />
+	<gradient
+		android:angle="45"
+		android:startColor="#0082C9"
+		android:endColor="#30B6FF"
+		android:type="linear" />
 </shape>

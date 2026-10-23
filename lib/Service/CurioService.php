@@ -94,6 +94,7 @@ class CurioService {
 				'folders' => [],
 				'settings' => $this->getSettings(),
 				'map' => $this->mapConfig(),
+				'onboarding' => $this->onboardingState(),
 			];
 		}
 
@@ -151,6 +152,7 @@ class CurioService {
 			'folders' => array_map(static fn (Folder $f) => $f->jsonSerialize(), $this->folders->findOwned($uid)),
 			'settings' => $this->getSettings(),
 			'map' => $this->mapConfig(),
+			'onboarding' => $this->onboardingState(),
 		];
 	}
 
@@ -1112,6 +1114,23 @@ class CurioService {
 			$this->config->setAppValue(Application::APP_ID, 'carto_api_key', $key);
 		}
 		return $this->mapConfig();
+	}
+
+	/* ===================== ONBOARDING ===================== */
+
+	/** Whether this user has been through (or skipped) the first-run tour. */
+	public function onboardingState(): array {
+		return ['done' => $this->config->getUserValue($this->uid(), Application::APP_ID, 'onboarding_done', '') === '1'];
+	}
+
+	public function setOnboardingDone(bool $done): array {
+		$uid = $this->uid();
+		if ($done) {
+			$this->config->setUserValue($uid, Application::APP_ID, 'onboarding_done', '1');
+		} else {
+			$this->config->deleteUserValue($uid, Application::APP_ID, 'onboarding_done');
+		}
+		return $this->onboardingState();
 	}
 
 	/* ===================== SETTINGS ===================== */

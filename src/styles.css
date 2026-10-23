@@ -588,3 +588,29 @@
 .curio .brw-empty { padding: 16px 11px; color: var(--text-soft); font-size: 13px; text-align: center; }
 .curio .setup-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 12px; }
 .curio .setup-err { margin-top: 10px; color: #d94141; font-size: 13px; }
+
+/* ---------- first-run tour ---------- */
+.curio .modal.tour { width: min(580px, 94vw); }
+.curio .tour-body { padding-top: 10px; }
+.curio .tour-art { width: 58px; height: 58px; border-radius: 16px; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary); margin: 0 0 14px; }
+.curio .tour-lead { margin: 0 0 12px; line-height: 1.55; font-size: 14.5px; }
+.curio .tour-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.curio .tour-list li { display: flex; gap: 12px; align-items: flex-start; line-height: 1.5; font-size: 14px; }
+.curio .tour-list li > span { flex: 0 0 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--surface-2); color: var(--primary); }
+.curio .tour-app { display: flex; gap: 18px; align-items: center; margin: 4px 0 14px; flex-wrap: wrap; }
+.curio .tour-qr { text-align: center; }
+.curio .tour-qr svg { width: 132px; height: 132px; display: block; background: #fff; border-radius: 10px; border: 1px solid var(--border); }
+.curio .tour-qr svg path, .curio .tour-qr svg rect[fill="black"] { fill: #111; }
+.curio .tour-qr .hint { margin-top: 6px; }
+.curio .tour-app-actions { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.curio .tour-app-actions a.btn { text-decoration: none; }
+.curio .tour-app-actions a.hint { color: var(--primary); text-decoration: none; }
+.curio .tour-install { background: var(--surface-2); border-radius: 10px; padding: 10px 14px; font-size: 13.5px; }
+.curio .tour-install summary { cursor: pointer; font-weight: 600; }
+.curio .tour-install ol { margin: 10px 0 8px; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; line-height: 1.5; }
+.curio .tour-install code { background: var(--surface); padding: 1px 6px; border-radius: 5px; word-break: break-all; }
+.curio .tour-replay { margin: 14px 0 0; }
+.curio .tour-foot { align-items: center; }
+.curio .tour-dots { flex: 1; display: flex; gap: 6px; }
+.curio .tour-dots button { width: 8px; height: 8px; border-radius: 50%; background: var(--border); padding: 0; }
+.curio .tour-dots button.on { background: var(--primary); width: 20px; border-radius: 4px; }

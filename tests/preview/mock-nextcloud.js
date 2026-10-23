@@ -26,7 +26,7 @@ function tile(c) {
 
 const PLACES = [
 	['Fàbrica Aymerich', 41.5636, 2.0089, '#b5651d'], ['Sagrada Família', 41.4036, 2.1744, '#c9a66b'],
-	['Musée d\\'Orsay', 48.86, 2.3266, '#8e9aaf'], ['Cité radieuse', 43.2617, 5.3963, '#7a8b6f'],
+	["Musée d'Orsay", 48.86, 2.3266, '#8e9aaf'], ['Cité radieuse', 43.2617, 5.3963, '#7a8b6f'],
 	['Norway office', 59.91, 10.75, '#5b7c99'], ['Priory Chapel', 38.63, -90.45, '#d9c2a3'],
 	['Casa Batlló', 41.3917, 2.1650, '#3f6b3a'], ['Hanoi brick house', 21.03, 105.85, '#a8452c'],
 ];
@@ -35,7 +35,7 @@ function state(opts) {
 	return {
 		currentUser: { uid: 'tom', displayName: 'Tom Bardout' },
 		boards: [{ id: 1, name: 'Conception archi', color: '#0069c2', mine: true, visible: true }],
-		references: PLACES.map((p, i) => ({ id: 10 + i, board: 1, type: 'image_url', title: p[0], img: tile(p[3]), tags: [], comments: [], seed: 3 + i, lat: p[1], lng: p[2], owner: 'tom', created: 1790000000 + i })),
+		references: (opts.only ? PLACES.filter((p) => opts.only.includes(p[0])) : PLACES).map((p, i) => ({ id: 10 + i, board: 1, type: 'image_url', title: p[0], img: tile(p[3]), tags: [], comments: [], seed: 3 + i, lat: p[1], lng: p[2], owner: 'tom', created: 1790000000 + i })),
 		tags: [], folders: [],
 		settings: Object.assign({ theme: 'light', layout: 'map', labels: true, sort: 'created_desc', dateFormat: 'auto' }, opts.settings || {}),
 		map: opts.map || { key: '', canEdit: true },

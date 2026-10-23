@@ -275,6 +275,13 @@ class ApiController extends Controller {
 		return $this->run(fn () => $this->service->updateSettings($theme, $layout, $labels, $sort, $dateFormat));
 	}
 
+	/* first-run tour */
+
+	#[NoAdminRequired]
+	public function setOnboarding(bool $done = true): JSONResponse {
+		return $this->run(fn () => $this->service->setOnboardingDone($done));
+	}
+
 	/* map tiles (admin only: no NoAdminRequired, so Nextcloud refuses other users) */
 
 	public function setMapKey(string $key = ''): JSONResponse {

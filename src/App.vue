@@ -595,8 +595,74 @@
 						<div class="urlrow"><input v-model="mapKeyInput" :placeholder="tr('Paste your CARTO basemaps key')" spellcheck="false" autocomplete="off" @keydown.enter.prevent="saveMapKey"><button class="btn" :disabled="mapKeyBusy || mapKeyInput.trim() === mapKey" @click="saveMapKey">{{ tr('Save') }}</button></div>
 						<div class="hint" style="margin-top:6px">{{ mapKeyMsg || tr('Optional. The map uses OpenFreeMap, which needs no key. To use CARTO maps instead, paste a free key from carto.com/basemaps/apikey. It applies to everyone on this Nextcloud.') }}</div>
 					</div>
+					<div class="field">
+						<label>{{ tr('Help') }}</label>
+						<div style="display:flex;gap:8px;flex-wrap:wrap">
+							<button class="btn" @click="openTour(0)">{{ tr('Show the tour again') }}</button>
+							<button v-if="!inAndroidApp" class="btn" @click="openTour(tourSteps.findIndex(s => s.k === 'app'))"><span v-html="icon('phone', 15)" />{{ tr('Get the Android app') }}</button>
+						</div>
+					</div>
 				</div>
 				<div class="mfoot"><button class="btn primary" @click="settingsOpen = false">{{ tr('Done') }}</button></div>
+			</div>
+		</div>
+
+		<!-- First-run tour (once per user; replay from Settings) -->
+		<div v-if="tourOpen" class="scrim show tour-scrim">
+			<div class="modal show tour">
+				<div class="mhead"><h2>{{ tourSteps[tourStep].title }}</h2><button class="close" :title="tr('Skip the tour')" @click="finishTour" v-html="icon('x', 18)" /></div>
+				<div class="mbody tour-body">
+					<div class="tour-art" v-html="icon(tourSteps[tourStep].icon, 30)" />
+					<template v-if="tourSteps[tourStep].k === 'welcome'">
+						<p class="tour-lead">{{ tr('Curio gathers the images, links, videos, PDFs and notes you collect into visual boards. This short tour shows you around.') }}</p>
+						<p class="tour-lead">{{ tr('Every reference is a real file in your Nextcloud Files, in the folder you chose for Curio, so your collection stays yours.') }}</p>
+					</template>
+					<ul v-else-if="tourSteps[tourStep].k === 'add'" class="tour-list">
+						<li><span v-html="icon('link', 17)" />{{ tr('Paste a link from Pinterest, Instagram, YouTube or any website with Add reference: the picture, title, description and place are fetched for you.') }}</li>
+						<li><span v-html="icon('image', 17)" />{{ tr('Upload photos and PDFs, or drop images and links straight onto the board.') }}</li>
+						<li><span v-html="icon('text', 17)" />{{ tr('Write notes for the ideas that do not have a link yet.') }}</li>
+						<li><span v-html="icon('tag', 17)" />{{ tr('Hashtags in a caption are matched to your tags, and new ones are suggested. Remove any you do not want before adding.') }}</li>
+					</ul>
+					<ul v-else-if="tourSteps[tourStep].k === 'organize'" class="tour-list">
+						<li><span v-html="icon('tag', 17)" />{{ tr('Tags have colors and live in folders in the sidebar. The eye next to a tag or a board shows or hides it.') }}</li>
+						<li><span v-html="icon('filter', 17)" />{{ tr('Filter by type, or search titles and descriptions.') }}</li>
+						<li><span v-html="icon('grid', 17)" />{{ tr('Switch between the grid, vertical, horizontal and map layouts at the top right.') }}</li>
+						<li><span v-html="icon('pin', 17)" />{{ tr('References with a place appear on the map. Places are detected from captions, or set in a reference\'s Location.') }}</li>
+					</ul>
+					<ul v-else-if="tourSteps[tourStep].k === 'share'" class="tour-list">
+						<li><span v-html="icon('users', 17)" />{{ tr('Share a board with people on your Nextcloud, with view-only or edit access, from Manage boards in the sidebar.') }}</li>
+						<li><span v-html="icon('comment', 17)" />{{ tr('Leave comments on a reference to discuss it in context.') }}</li>
+						<li><span v-html="icon('folder', 17)" />{{ tr('Export or import a board as CSV from Settings.') }}</li>
+					</ul>
+					<template v-else-if="tourSteps[tourStep].k === 'app'">
+						<p class="tour-lead">{{ tr('Curio for Android opens your boards on your phone and adds "Add to Curio" to the share menu of Instagram, Pinterest, TikTok, YouTube and any app, with the title, caption, picture and place read for you.') }}</p>
+						<div class="tour-app">
+							<div v-if="!isAndroid" class="tour-qr"><span v-html="appQrSvg" /><div class="hint">{{ tr('Scan with your Android phone') }}</div></div>
+							<div class="tour-app-actions">
+								<a class="btn primary" :href="appApkUrl" rel="noopener"><span v-html="icon('phone', 16)" />{{ tr('Download the app') }}</a>
+								<a class="hint" :href="appReleasesUrl" target="_blank" rel="noopener">{{ tr('All versions and release notes') }}</a>
+							</div>
+						</div>
+						<details class="tour-install" open>
+							<summary>{{ tr('How to install it') }}</summary>
+							<ol>
+								<li>{{ tr('On your Android phone, download the app: scan the code or tap Download the app.') }}</li>
+								<li>{{ tr('Open the downloaded file, from the notification or the Files app.') }}</li>
+								<li>{{ tr('If Android says your browser or Files app is not allowed to install apps, tap Settings, turn on "Allow from this source", then go back.') }}</li>
+								<li>{{ tr('Tap Install. If Play Protect warns about an unknown app, tap "More details", then "Install anyway".') }}</li>
+								<li>{{ tr('Open Curio and sign in with this address:') }} <code>{{ serverAddress }}</code></li>
+							</ol>
+							<div class="hint">{{ tr('Curio for Android is free and open source. It is not on the Play Store, which is why Android asks for this permission once.') }}</div>
+						</details>
+					</template>
+					<p v-if="tourStep === tourSteps.length - 1" class="hint tour-replay">{{ tr('You can replay this tour from Settings.') }}</p>
+				</div>
+				<div class="mfoot tour-foot">
+					<div class="tour-dots"><button v-for="(st, i) in tourSteps" :key="st.k" :class="{ on: i === tourStep }" :title="st.title" @click="tourStep = i" /></div>
+					<button v-if="tourStep > 0" class="btn" @click="tourStep--">{{ tr('Back') }}</button>
+					<button v-if="tourStep < tourSteps.length - 1" class="btn primary" @click="tourStep++">{{ tr('Next') }}</button>
+					<button v-else class="btn primary" @click="finishTour">{{ tr('Start using Curio') }}</button>
+				</div>
 			</div>
 		</div>
 
@@ -645,6 +711,7 @@ import axios from '@nextcloud/axios'
 import { generateUrl, generateFilePath } from '@nextcloud/router'
 import { ic, playSvg, grad, svgThumb, initials, textOn, mdToHtml, parseVideo, videoWatchUrl, domainOf, TYPE_ICON, TYPE_NAME, PALETTE, PALETTE_GROUPS } from './helpers.js'
 import L from 'leaflet'
+import qrcode from 'qrcode-generator'
 import 'leaflet.markercluster'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
@@ -671,6 +738,9 @@ function loadVectorMaps() {
 }
 
 const api = (p) => generateUrl('/apps/curio/api' + p)
+// Curio for Android: the APK attached to the latest GitHub release.
+const APP_APK_URL = 'https://github.com/Acknar/Curio/releases/latest/download/curio-android.apk'
+const APP_RELEASES_URL = 'https://github.com/Acknar/Curio/releases/latest'
 const rnd = () => PALETTE[Math.floor(Math.random() * PALETTE.length)]
 
 export default {
@@ -712,6 +782,10 @@ export default {
 			manageTagsOpen: false, manageBoardsOpen: false, settingsOpen: false, deleteConfirm: null, deletingBoard: false,
 			dataBoardId: null, dataMsg: '', dataBusy: false,
 			mapKey: '', mapCanEdit: false, mapKeyInput: '', mapKeyBusy: false, mapKeyMsg: '', mapLoadError: false,
+			tourOpen: false, tourStep: 0, onboardingDone: true,
+			appApkUrl: APP_APK_URL, appReleasesUrl: APP_RELEASES_URL,
+			inAndroidApp: typeof window.CurioAndroid !== 'undefined',
+			isAndroid: /Android/i.test(navigator.userAgent || ''),
 			toasts: [], toastSeq: 0, addWarn: false, fetched: false, dragOver: false, dragTag: null, dragOverFolder: null, boardPickerOpen: false,
 			filterTypes: [], typeMenuOpen: false, currentIndexKey: '',
 			imgAspect: {}, scrollable: false,
@@ -720,6 +794,27 @@ export default {
 		}
 	},
 	computed: {
+		tourSteps() {
+			const steps = [
+				{ k: 'welcome', icon: 'sparkle', title: this.tr('Welcome to Curio') },
+				{ k: 'add', icon: 'image', title: this.tr('Add references') },
+				{ k: 'organize', icon: 'tag', title: this.tr('Organize and browse') },
+				{ k: 'share', icon: 'users', title: this.tr('Share and discuss') },
+			]
+			// Inside the Android app the app step is pointless; it has its own introduction.
+			if (!this.inAndroidApp) steps.push({ k: 'app', icon: 'phone', title: this.tr('Curio on your phone') })
+			return steps
+		},
+		appQrSvg() {
+			const qr = qrcode(0, 'M')
+			qr.addData(APP_APK_URL)
+			qr.make()
+			return qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })
+		},
+		serverAddress() {
+			const root = (window.OC && typeof OC.webroot === 'string') ? OC.webroot : (window._oc_webroot || '')
+			return window.location.origin + root
+		},
 		theme() { const t = this.settings.theme; return (t === 'dark' || (t === 'system' && this.prefersDark)) ? 'dark' : 'light' },
 		dateLocale() {
 			const df = this.settings.dateFormat || 'auto'
@@ -894,7 +989,20 @@ export default {
 			this.folders = data.folders.map(f => ({ ...f }))
 			this.settings = data.settings
 			this.applyMapConfig(data.map)
+			this.onboardingDone = !!(data.onboarding && data.onboarding.done)
+			if (!this.onboardingDone && !this.tourOpen) this.openTour(0)
 			this.error = null
+		},
+		openTour(step) {
+			this.settingsOpen = false
+			this.tourStep = Math.max(0, Math.min(step || 0, this.tourSteps.length - 1))
+			this.tourOpen = true
+		},
+		async finishTour() {
+			this.tourOpen = false
+			if (this.onboardingDone) return
+			this.onboardingDone = true
+			try { await axios.put(api('/onboarding'), { done: true }) } catch (e) { /* shown again next time; harmless */ }
 		},
 		applyMapConfig(m) {
 			this.mapKey = (m && m.key) || ''
@@ -1775,6 +1883,7 @@ export default {
 		// would drop unsaved edits; it keeps its own close button.
 		onKeydown(e) {
 			if (e.key !== 'Escape') return
+			if (this.tourOpen) { this.finishTour(); return }
 			if (this.typeMenuOpen) { this.typeMenuOpen = false; return }
 			if (this.cropOpen) { this.cropOpen = false; return }
 			// scrim-top prompts (input / tag / board) sit above the manage modals, so close them first
