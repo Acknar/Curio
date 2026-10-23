@@ -15,8 +15,8 @@ rename or remove it and the board follows.
 
 ## Requirements
 
-- Nextcloud 31 to 34
-- PHP 8.1+
+- Nextcloud 31 to 35
+- PHP 8.1+ (8.3+ on Nextcloud 35, which requires it)
 - `imagick` recommended for PDF page previews
 
 ## Map tiles

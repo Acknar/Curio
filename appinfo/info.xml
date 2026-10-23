@@ -44,7 +44,7 @@ On first launch you choose the Nextcloud folder where Curio keeps its boards. Ev
 	<bugs>https://github.com/Acknar/Curio/issues</bugs>
 	<repository type="git">https://github.com/Acknar/Curio.git</repository>
 	<dependencies>
-		<nextcloud min-version="31" max-version="34"/>
+		<nextcloud min-version="31" max-version="35"/>
 	</dependencies>
 	<navigations>
 		<navigation>
