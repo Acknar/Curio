@@ -2,6 +2,9 @@ name: Android APK
 
 on:
   push:
+    # Listing tags alone would limit the trigger to tag pushes; branches must be named too.
+    branches:
+      - '**'
     paths:
       - 'android/**'
       - '.github/workflows/android.yml'
