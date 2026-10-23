@@ -1,0 +1,8 @@
+{"items":[{"pk":"3401234567890123456","code":"C8xYz12AbCd","media_type":8,"product_type":"carousel_container",
+"caption":{"text":"Golden hour at the Calanques de Cassis 🌅\nHiked from Port-Miou with @marc.dupont\n\n#calanques #provence"},
+"user":{"username":"lena.travels"},
+"location":{"pk":2134,"name":"Calanques de Cassis","lat":43.2105,"lng":5.4512},
+"carousel_media":[
+ {"media_type":1,"image_versions2":{"candidates":[{"width":640,"height":800,"url":"https://scontent.cdninstagram.com/c1_640.jpg"},{"width":1440,"height":1800,"url":"https://scontent.cdninstagram.com/c1_1440.jpg"}]}},
+ {"media_type":2,"image_versions2":{"candidates":[{"width":1080,"height":1920,"url":"https://scontent.cdninstagram.com/c2_poster.jpg"}]},"video_versions":[{"type":101,"width":720,"height":1280,"url":"https://scontent.cdninstagram.com/c2.mp4"}]}
+]}]}

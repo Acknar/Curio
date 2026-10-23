@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<title>Add to Curio</title>
+	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="clip.css">
+</head>
+<body>
+	<div class="backdrop" id="backdrop"></div>
+	<div class="sheet">
+		<div class="grab"></div>
+		<header class="hd">
+			<div class="hd-title">
+				<svg viewBox="0 0 256 256" aria-hidden="true"><g fill="#0069c2"><rect x="25" y="25" width="96" height="124" rx="18"/><rect x="25" y="163" width="96" height="68" rx="18" fill-opacity="0.55"/><rect x="135" y="25" width="96" height="68" rx="18" fill-opacity="0.55"/><rect x="135" y="107" width="96" height="124" rx="18"/></g></svg>
+				Add to Curio
+			</div>
+			<div>
+				<button id="btnSettings" class="iconbtn" title="Settings" aria-label="Settings">&#9881;</button>
+				<button id="btnClose" class="iconbtn" title="Close" aria-label="Close">&times;</button>
+			</div>
+		</header>
+
+		<div class="sheet-body">
+			<!-- Not connected yet -->
+			<div id="setup" class="pane hidden">
+				<p id="setupMsg"></p>
+				<button type="button" id="btnConnect" class="btn primary block">Connect to Nextcloud</button>
+			</div>
+
+			<div id="loading" class="loading">
+				<div class="spinner"></div>
+				<span id="loadingTxt">Reading the link...</span>
+			</div>
+
+			<form id="form" class="pane hidden" autocomplete="off">
+				<div class="typebar">
+					<span class="typechip" id="typeChip">Link</span>
+					<span class="src" id="srcLabel"></span>
+				</div>
+
+				<div id="notes"></div>
+
+				<div class="prev hidden" id="prevWrap">
+					<img id="prevImg" alt="">
+				</div>
+				<div class="filecard hidden" id="fileCard"></div>
+				<div class="imgpick hidden" id="imgPick">
+					<div class="lbl">Choose the image to import</div>
+					<div class="imgpick-row" id="imgPickRow"></div>
+				</div>
+
+				<label class="field">
+					<span class="flabel">Board</span>
+					<select id="board" class="input"></select>
+				</label>
+
+				<label class="field">
+					<span class="flabel">Title</span>
+					<input id="title" class="input" type="text" placeholder="Title (optional)">
+				</label>
+
+				<label class="field" id="descField">
+					<span class="flabel">Description</span>
+					<textarea id="desc" class="input" rows="3" placeholder="Optional description"></textarea>
+				</label>
+
+				<label class="field hidden" id="bodyField">
+					<span class="flabel">Text</span>
+					<textarea id="body" class="input" rows="6" placeholder="Write markdown..."></textarea>
+				</label>
+
+				<div class="field" id="locField">
+					<span class="flabel">Location</span>
+					<div id="geoDetected" class="geo-detected hidden">
+						<span>&#128205;</span>
+						<span id="geoDetectedTxt" class="geo-detected-txt"></span>
+						<button type="button" id="geoClear" class="chipx" title="Clear location">&times;</button>
+					</div>
+					<div class="geo-search">
+						<input id="geoQuery" class="input" type="text" placeholder="Search a place or address...">
+						<div id="geoSug" class="sugbox hidden"></div>
+					</div>
+					<div id="geoBusy" class="hint hidden">Detecting location...</div>
+					<div id="geoSuggestions" class="chips hidden"></div>
+				</div>
+
+				<div class="field">
+					<span class="flabel">Tags</span>
+					<div class="taginput-wrap">
+						<div class="taginput" id="tagPills">
+							<input id="tagInput" class="taginput-input" type="text" placeholder="Add tags..." enterkeyhint="done">
+						</div>
+						<div id="tagSug" class="sugbox hidden"></div>
+					</div>
+					<div id="hashSug" class="chips hidden">
+						<span class="chips-lbl">From caption:</span>
+					</div>
+				</div>
+
+				<div id="err" class="err hidden"></div>
+
+				<div class="foot">
+					<button type="button" id="btnCancel" class="btn">Cancel</button>
+					<button type="submit" id="btnAdd" class="btn primary">Add to board</button>
+				</div>
+			</form>
+
+			<div id="done" class="done hidden">
+				<div class="done-check">&#10003;</div>
+				<div id="doneMsg">Added to your board.</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="native.js"></script>
+	<script src="curio.js"></script>
+	<script src="taglogic.js"></script>
+	<script src="cleanup.js"></script>
+	<script src="extract.js"></script>
+	<script src="clip.js"></script>
+</body>
+</html>
