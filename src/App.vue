@@ -1,5 +1,5 @@
 <template>
-	<div class="curio" :class="{ 'nav-hidden': !navOpen }" :data-rbtheme="theme">
+	<div class="curio" :class="{ 'nav-hidden': !navOpen }" :data-rbtheme="theme" @touchstart.passive="navTouchStart" @touchend="navTouchEnd">
 		<!-- First-run folder setup: shown until the user creates or picks a base folder -->
 		<div v-if="needsSetup" class="scrim show setup-scrim">
 			<div class="modal show" style="width:min(500px,94vw)">
@@ -582,13 +582,13 @@
 						<button class="rbtoggle" :class="{ on: settings.labels }" :aria-pressed="settings.labels" @click="setLabels(!settings.labels)"><span /></button>
 					</div>
 					<div class="field">
-						<label>{{ tr('Import / export (CSV)') }}</label>
+						<label>{{ tr('Import / export') }}</label>
 						<select v-model="dataBoardId" class="rb-select" style="margin-bottom:8px"><option v-for="b in boards.filter(x => x.mine)" :key="b.id" :value="b.id">{{ b.name }}</option></select>
 						<div style="display:flex;gap:8px">
 							<button class="btn" :disabled="dataBusy" @click="exportCsv">{{ tr('Export CSV') }}</button>
-							<label class="btn" style="cursor:pointer;display:inline-flex;align-items:center">{{ tr('Import CSV') }}<input type="file" accept=".csv,text/csv" style="display:none" @change="importCsv"></label>
+							<label class="btn" style="cursor:pointer;display:inline-flex;align-items:center" :class="{ disabled: dataBusy }">{{ tr('Import bookmarks') }}<input type="file" accept=".csv,.tsv,.txt,.html,.htm,.json,text/csv,text/html,application/json,text/plain" style="display:none" :disabled="dataBusy" @change="importCsv"></label>
 						</div>
-						<div class="hint" style="margin-top:6px">{{ dataMsg || tr('Export this board to a spreadsheet, or import rows and match them to files by title. Missing media shows a placeholder.') }}</div>
+						<div class="hint" style="margin-top:6px">{{ dataMsg || tr('Export this board as CSV. Import a CSV from Curio, Raindrop.io, Pocket, Instapaper, Diigo or a spreadsheet, a bookmarks file exported from your browser, or Pinboard JSON. A row with the same link or title as a reference updates it.') }}</div>
 					</div>
 					<div v-if="mapCanEdit" class="field">
 						<label>{{ tr('Map tiles (CARTO API key)') }}</label>
@@ -609,25 +609,22 @@
 
 		<!-- First-run tour (once per user; replay from Settings) -->
 		<div v-if="tourOpen" class="scrim show tour-scrim">
-			<div class="modal show tour" :class="tourSteps[tourStep].k === 'welcome' ? ['is-welcome', 'tw-' + tourWelcomeStyle] : null" :style="tourSteps[tourStep].k === 'welcome' && tourWelcomeStyle === 'a' ? { '--tour-img': 'url(' + tourWelcomeImg + ')' } : null" @touchstart.passive="tourTouchStart" @touchend="tourTouchEnd">
+			<div class="modal show tour" :class="{ 'is-welcome': tourSteps[tourStep].k === 'welcome' }" :style="tourSteps[tourStep].k === 'welcome' ? { '--tour-img': 'url(' + tourWelcomeImg + ')' } : null" @touchstart.passive="tourTouchStart" @touchend="tourTouchEnd">
 				<div class="mhead"><h2>{{ tourSteps[tourStep].title }}</h2><button class="close" :title="tr('Skip the tour')" @click="finishTour" v-html="icon('x', 18)" /></div>
 				<div class="mbody tour-body">
 					<div v-if="tourSteps[tourStep].k === 'welcome'" class="tour-welcome">
-						<div v-if="tourWelcomeStyle === 'b'" class="tw-banner" :style="{ backgroundImage: 'url(' + tourWelcomeImg + ')' }" />
-						<div v-if="tourWelcomeStyle === 'c'" class="tw-mosaic" aria-hidden="true"><span v-for="n in 12" :key="n" /></div>
 						<div class="tw-logo" v-html="logoSvg" />
 						<h1 class="tw-title">{{ tr('Welcome to Curio') }}</h1>
 						<p class="tw-lead">{{ tr('Curio turns the images, links, videos and notes you collect into visual boards you can filter, tag and share.') }}</p>
 						<p class="tw-text">{{ tr('Paste a link from Pinterest, Instagram, YouTube or any website and it pulls in the picture, title and a snapshot for you. Upload your own photos, drop in a PDF, or jot a quick note.') }}</p>
-						<div v-if="tourWelcomeStyle === 'd'" class="tw-chips">
-							<span v-for="c in [['image', 'Images'], ['link', 'Web pages'], ['video', 'Videos'], ['pdf', 'PDFs'], ['text', 'Text notes']]" :key="c[0]"><span v-html="icon(c[0], 15)" />{{ tr(c[1]) }}</span>
-						</div>
 						<p class="tw-note">{{ tr('Every reference is a real file in your Nextcloud, so your collection stays yours.') }}</p>
 					</div>
 					<div v-else class="tour-art" v-html="icon(tourSteps[tourStep].icon, 30)" />
 					<ul v-if="tourSteps[tourStep].k === 'add'" class="tour-list">
 						<li><span v-html="icon('link', 17)" />{{ tr('Paste a link from Pinterest, Instagram, YouTube or any website with Add reference: the picture, title, description and place are fetched for you.') }}</li>
-						<li><span v-html="icon('image', 17)" />{{ tr('Upload photos and PDFs, or drop images and links straight onto the board.') }}</li>
+						<li v-if="inAndroidApp"><span v-html="icon('image', 17)" />{{ tr('Upload photos and PDFs from your phone, or share them to Curio from any app.') }}</li>
+						<li v-else-if="isPhone"><span v-html="icon('image', 17)" />{{ tr('Upload photos and PDFs from your phone.') }}</li>
+						<li v-else><span v-html="icon('image', 17)" />{{ tr('Upload photos and PDFs, or drop images and links straight onto the board.') }}</li>
 						<li><span v-html="icon('text', 17)" />{{ tr('Write notes for the ideas that do not have a link yet.') }}</li>
 						<li><span v-html="icon('tag', 17)" />{{ tr('Hashtags in a caption are matched to your tags, and new ones are suggested. Remove any you do not want before adding.') }}</li>
 					</ul>
@@ -636,7 +633,7 @@
 						<li><span v-html="icon('filter', 17)" />{{ tr('Filter by type, or search titles and descriptions.') }}</li>
 						<li><span v-html="icon('grid', 17)" />{{ tr('Switch between the grid, vertical, horizontal and map layouts at the top right. References with a place show up on the map.') }}</li>
 						<li><span v-html="icon('users', 17)" />{{ tr('Share a board with people on your Nextcloud, with view-only or edit access, from Manage boards in the sidebar, and comment on references to discuss them.') }}</li>
-						<li><span v-html="icon('folder', 17)" />{{ tr('Export or import a board as CSV from Settings.') }}</li>
+						<li v-if="!isPhone"><span v-html="icon('folder', 17)" />{{ tr('Export or import a board as CSV from Settings.') }}</li>
 					</ul>
 					<template v-else-if="tourSteps[tourStep].k === 'app'">
 						<p class="tour-lead">{{ tr('Curio for Android opens your boards on your phone and adds "Add to Curio" to the share menu of Instagram, Pinterest, TikTok, YouTube and any app, with the title, caption, picture and place read for you.') }}</p>
@@ -716,6 +713,7 @@ import { generateUrl, generateFilePath } from '@nextcloud/router'
 import { ic, playSvg, grad, svgThumb, initials, textOn, mdToHtml, parseVideo, videoWatchUrl, domainOf, TYPE_ICON, TYPE_NAME, PALETTE, PALETTE_GROUPS } from './helpers.js'
 import L from 'leaflet'
 import qrcode from 'qrcode-generator'
+import { parseBookmarks } from './bookmarks.js'
 import 'leaflet.markercluster'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
@@ -787,8 +785,6 @@ export default {
 			dataBoardId: null, dataMsg: '', dataBusy: false,
 			mapKey: '', mapCanEdit: false, mapKeyInput: '', mapKeyBusy: false, mapKeyMsg: '', mapLoadError: false,
 			tourOpen: false, tourStep: 0, onboardingDone: true,
-			// Welcome screen design under review: a (image behind), b (image banner), c (tile mosaic), d (type only).
-			tourWelcomeStyle: (typeof window !== 'undefined' && window.__curioTourStyle) || 'a',
 			appApkUrl: APP_APK_URL, appReleasesUrl: APP_RELEASES_URL,
 			inAndroidApp: typeof window.CurioAndroid !== 'undefined',
 			isAndroid: /Android/i.test(navigator.userAgent || ''),
@@ -812,6 +808,12 @@ export default {
 		},
 		logoSvg() {
 			return '<svg viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect x="25" y="25" width="96" height="124" rx="18"/><rect x="25" y="163" width="96" height="68" rx="18"/><rect x="135" y="25" width="96" height="68" rx="18"/><rect x="135" y="107" width="96" height="124" rx="18"/></g></svg>'
+		},
+		// Phones and tablets: the tour leaves out what only works with a mouse and a computer.
+		isPhone() {
+			if (this.inAndroidApp || this.isAndroid) return true
+			if (typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '')) return true
+			return typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches && !matchMedia('(pointer: fine)').matches
 		},
 		tourWelcomeImg() {
 			return generateFilePath('curio', 'img', 'tour-welcome.webp')
@@ -1004,6 +1006,30 @@ export default {
 			this.settingsOpen = false
 			this.tourStep = Math.max(0, Math.min(step || 0, this.tourSteps.length - 1))
 			this.tourOpen = true
+		},
+		// Swipe right to pull out the sidebar, left to put it away. Opening works from the
+		// left edge, or from anywhere on a vertically scrolling board; the horizontal
+		// layout and the map keep horizontal swipes for themselves. Dialogs are ignored.
+		navTouchStart(e) {
+			const t = e.touches[0]
+			const el = e.target && e.target.closest ? e.target : null
+			const blocked = !t || e.touches.length > 1 || (el && el.closest('.scrim, .modal, input, textarea, select, .leaflet-container'))
+			this._navTouch = blocked ? null : { x: t.clientX, y: t.clientY, inBoard: !!(el && el.closest('.main')), inSide: !!(el && el.closest('.sidebar')) }
+		},
+		navTouchEnd(e) {
+			const start = this._navTouch
+			const t = e.changedTouches[0]
+			this._navTouch = null
+			if (!start || !t) return
+			const dx = t.clientX - start.x
+			const dy = t.clientY - start.y
+			if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return
+			if (dx < 0 && this.navOpen && (this.isMobile || start.inSide)) {
+				this.navOpen = false
+			} else if (dx > 0 && !this.navOpen) {
+				const anywhere = start.inBoard && (this.settings.layout === 'square' || this.settings.layout === 'masonry')
+				if (start.x <= 48 || anywhere) this.navOpen = true
+			}
 		},
 		tourTouchStart(e) {
 			const t = e.touches[0]
@@ -1316,12 +1342,23 @@ export default {
 			const id = this.dataBoardId || (this.boards.find(b => b.mine) || {}).id
 			if (!id) { e.target.value = ''; return }
 			this.dataBusy = true; this.dataMsg = this.tr('Importing...')
+			const sum = { imported: 0, created: 0, matched: 0, missing: 0 }
 			try {
-				const text = await file.text()
-				const { data } = await axios.post(api('/boards/' + id + '/import'), { csv: text })
-				this.dataMsg = this.tr('Imported {total}: {created} created, {matched} matched, {missing} missing media.', { total: data.imported, created: data.created, matched: data.matched, missing: data.missing })
-				await this.fetchState()
-			} catch (err) { this.dataMsg = this.tr('Import failed.') } finally { this.dataBusy = false; e.target.value = '' }
+				const rows = parseBookmarks(await file.text(), file.name)
+				if (!rows.length) { this.dataMsg = this.tr('No bookmarks found in this file.'); return }
+				// Small chunks: each new reference may download its picture.
+				for (let i = 0; i < rows.length; i += 25) {
+					this.dataMsg = this.tr('Importing {done} of {total}...', { done: i, total: rows.length })
+					const { data } = await axios.post(api('/boards/' + id + '/import'), { rows: rows.slice(i, i + 25), first: i === 0 })
+					for (const k of Object.keys(sum)) sum[k] += data[k] || 0
+				}
+				this.dataMsg = this.tr('Imported {total}: {created} created, {matched} matched, {missing} missing media.', { total: sum.imported, created: sum.created, matched: sum.matched, missing: sum.missing })
+			} catch (err) {
+				this.dataMsg = sum.imported ? this.tr('Import stopped after {count} rows.', { count: sum.imported }) : this.tr('Import failed.')
+			} finally {
+				this.dataBusy = false; e.target.value = ''
+				if (sum.imported) await this.fetchState()
+			}
 		},
 		setTheme(t) { this.settings.theme = t; this.persistSettings() },
 		setLabels(v) { this.settings.labels = v; this.persistSettings() },

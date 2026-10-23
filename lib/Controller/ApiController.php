@@ -93,7 +93,10 @@ class ApiController extends Controller {
 	}
 
 	#[NoAdminRequired]
-	public function importBoard(int $id, string $csv = ''): JSONResponse {
+	public function importBoard(int $id, string $csv = '', array $rows = [], bool $first = true): JSONResponse {
+		if (count($rows) > 0) {
+			return $this->run(fn () => $this->service->importRows($id, $rows, $first));
+		}
 		return $this->run(fn () => $this->service->importCsv($id, $csv));
 	}
 

@@ -35,6 +35,16 @@ administrator, or run:
 occ config:app:set curio carto_api_key --value=YOUR_KEY
 ```
 
+## Importing bookmarks
+
+Settings > Import bookmarks adds references to a board from:
+
+- a CSV: Curio's own export, Raindrop.io, Pocket, Instapaper, Diigo, or any spreadsheet with a `url`/`link` or `title`/`name` column (also read: `description`/`excerpt`, `note`/`notes`/`highlights`, `tags` separated by commas or `|`, `folder`/`collection`, `created`/`time_added`/`timestamp`, `cover`/`image`);
+- a browser bookmarks file (`bookmarks.html`, the Netscape bookmark format that every browser and most bookmark services export); folders become tags;
+- Pinboard JSON, or a plain list of links.
+
+There is no standard CSV layout for bookmarks; the Netscape bookmark file is the de facto interchange format, so it is the safest choice when a service offers it.
+
 ## Install
 
 Install from the [Nextcloud App Store](https://apps.nextcloud.com/apps/curio)

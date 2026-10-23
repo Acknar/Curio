@@ -6,7 +6,15 @@ All notable changes to Curio are documented here. The format is based on
 
 ## 2.1.1 - 2026-10-23
 
+### Added
+
+- Import bookmarks from other apps. Settings > Import bookmarks reads Curio's own CSV, CSV exports from Raindrop.io, Pocket, Instapaper and Diigo, any spreadsheet with a link or title column (comma, semicolon or tab separated), a plain list of links, the bookmarks file every browser exports (Netscape bookmark format, also produced by Raindrop.io, Pinboard, linkding, Karakeep and Pocket's older export), and Pinboard JSON. Titles, descriptions, notes, tags, folders (as tags) and dates are kept, and Raindrop.io covers are downloaded. Large files are imported in chunks with progress. A row now updates the reference with the same link, or the same title when it has no link, instead of matching by title only.
+- Swipe right to pull out the sidebar on a phone or tablet, left to put it away. On the grid and vertical layouts the swipe works anywhere on the board; on the horizontal layout and the map it starts from the left edge.
+
 ### Changed
+
+- New first-run welcome screen: larger, more spaced text over a faded picture of a Curio board, and a "Take the tour" button. The organize and share steps are merged into one.
+- On phones the tour leaves out what needs a computer (dropping files onto the board, CSV export) and, inside the Android app, mentions sharing to Curio from other apps.
 
 - First-run tour: swipe left or right to move between steps on touch screens. The last install step now says to sign in with your Nextcloud server address instead of showing the address.
 - App Store description: shorter opening paragraph.

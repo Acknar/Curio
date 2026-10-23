@@ -877,35 +877,80 @@ class CurioService {
 	}
 
 	/**
-	 * Import a CSV into a board. Rows match a file in the board folder by title
-	 * (metadata is merged onto it); rows with no matching file create a reference
-	 * and try to re-download the media, else a placeholder-warning reference.
+	 * Import a CSV into a board (Curio's own columns). Kept for older clients; the
+	 * app now parses files in the browser (src/bookmarks.js) and calls importRows.
 	 *
 	 * @return array{imported:int,created:int,matched:int,missing:int}
 	 */
 	public function importCsv(int $boardId, string $content): array {
+		$rows = [];
+		foreach ($this->parseCsv($content) as $row) {
+			$rows[] = [
+				'title' => $row['title'] ?? '',
+				'url' => $row['source_url'] ?? '',
+				'type' => $row['type'] ?? '',
+				'description' => $row['description'] ?? '',
+				'note' => $row['note'] ?? '',
+				'tags' => array_values(array_filter(array_map('trim', explode(',', (string)($row['tags'] ?? ''))))),
+				'created' => $row['created'] ?? '',
+			];
+		}
+		return $this->importRows($boardId, $rows, true);
+	}
+
+	/**
+	 * Import bookmark rows into a board: {title, url, type, description, note, tags[],
+	 * created, cover}. A row updates the reference with the same link (or, for rows
+	 * without a link, the same title); otherwise it creates one, downloading the cover
+	 * image when given. The app sends large files in chunks; $first is the first one.
+	 *
+	 * @param array<int,mixed> $rows
+	 * @return array{imported:int,created:int,matched:int,missing:int}
+	 */
+	public function importRows(int $boardId, array $rows, bool $first = true): array {
 		$board = $this->boards->find($boardId);
 		$this->assertBoardWrite($boardId, Constants::PERMISSION_CREATE);
-		$this->reconcileBoard($board, $board->getOwner() === $this->uid());
+		if ($first) {
+			$this->reconcileBoard($board, $board->getOwner() === $this->uid());
+		}
 
-		$existing = [];
+		$byTitle = [];
+		$byUrl = [];
 		foreach ($this->references->findByBoards([$boardId]) as $r) {
-			$existing[$this->titleKey((string)$r->getTitle())] = $r;
+			$byTitle[$this->titleKey((string)$r->getTitle())] = $r;
+			if ((string)$r->getSourceUrl() !== '') {
+				$byUrl[$this->urlKey((string)$r->getSourceUrl())] = $r;
+			}
 		}
 
 		$imported = 0;
 		$created = 0;
 		$matched = 0;
 		$missing = 0;
-		foreach ($this->parseCsv($content) as $row) {
-			$title = trim((string)($row['title'] ?? ''));
+		foreach (array_slice($rows, 0, 500) as $row) {
+			if (!is_array($row)) {
+				continue;
+			}
+			$title = mb_substr(trim((string)($row['title'] ?? '')), 0, 250);
 			if ($title === '') {
 				continue;
 			}
-			$type = trim((string)($row['type'] ?? 'link'));
-			$type = $type !== '' ? $type : 'link';
-			$key = $this->titleKey($title);
-			$r = $existing[$key] ?? null;
+			$url = trim((string)($row['url'] ?? ''));
+			$url = $this->looksHttp($url) ? $url : '';
+			$type = trim((string)($row['type'] ?? ''));
+			$type = in_array($type, ['link', 'image', 'image_url', 'text', 'video', 'pdf', 'file'], true) ? $type : 'link';
+			$cover = trim((string)($row['cover'] ?? ''));
+
+			$r = null;
+			if ($url !== '') {
+				$r = $byUrl[$this->urlKey($url)] ?? null;
+				$t = $byTitle[$this->titleKey($title)] ?? null;
+				if ($r === null && $t !== null && (string)$t->getSourceUrl() === '') {
+					$r = $t;
+				}
+			} else {
+				$r = $byTitle[$this->titleKey($title)] ?? null;
+			}
 			$isNew = $r === null;
 
 			if ($isNew) {
@@ -916,12 +961,23 @@ class CurioService {
 				$r->setTitle($title);
 				$r->setSeed(random_int(1, 9999));
 				$r->setCreated($this->parseDate((string)($row['created'] ?? '')));
+				if ($this->looksHttp($cover) && in_array($type, ['link', 'image_url'], true)) {
+					$r->setImg($cover);
+				}
 			} elseif ($r->getType() === 'file') {
 				$r->setType($type);
 			}
-			$r->setSourceUrl($this->blankToNull($row['source_url'] ?? null));
-			$r->setDescription($this->blankToNull($row['description'] ?? null));
-			$r->setNote($this->blankToNull($row['note'] ?? null));
+			if ($url !== '' || $isNew) {
+				$r->setSourceUrl($this->blankToNull($url));
+			}
+			$desc = $this->blankToNull((string)($row['description'] ?? ''));
+			$note = $this->blankToNull((string)($row['note'] ?? ''));
+			if ($desc !== null || $isNew) {
+				$r->setDescription($desc);
+			}
+			if ($note !== null || $isNew) {
+				$r->setNote($note);
+			}
 
 			if ($isNew) {
 				$r = $this->references->insert($r);
@@ -937,7 +993,8 @@ class CurioService {
 				$matched++;
 			}
 
-			$tagNames = array_values(array_filter(array_map('trim', explode(',', (string)($row['tags'] ?? '')))));
+			$tags = $row['tags'] ?? [];
+			$tagNames = array_values(array_unique(array_filter(array_map(static fn ($t) => mb_substr(trim((string)$t), 0, 64), is_array($tags) ? $tags : explode(',', (string)$tags)))));
 			if ($r->getFileId() !== null && count($tagNames) > 0) {
 				$ids = [];
 				foreach ($tagNames as $tn) {
@@ -945,10 +1002,21 @@ class CurioService {
 				}
 				$this->tagService->setFileTags($r->getFileId(), $ids);
 			}
-			$existing[$key] = $r;
+			$byTitle[$this->titleKey($title)] = $r;
+			if ($url !== '') {
+				$byUrl[$this->urlKey($url)] = $r;
+			}
 			$imported++;
 		}
 		return ['imported' => $imported, 'created' => $created, 'matched' => $matched, 'missing' => $missing];
+	}
+
+	/** Same page whatever the scheme, "www.", trailing slash or fragment. */
+	private function urlKey(string $url): string {
+		$u = strtolower(trim($url));
+		$u = preg_replace('~^https?://(www\.)?~', '', $u) ?? $u;
+		$u = preg_replace('~#.*$~', '', $u) ?? $u;
+		return rtrim($u, '/');
 	}
 
 	private function titleKey(string $title): string {

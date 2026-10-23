@@ -76,7 +76,6 @@
         "Exit full screen": "Sair do ecrã inteiro",
         "Export CSV": "Exportar CSV",
         "Export failed.": "Falha na exportação.",
-        "Export this board to a spreadsheet, or import rows and match them to files by title. Missing media shows a placeholder.": "Exporte este quadro para uma folha de cálculo, ou importe linhas e associe-as a ficheiros por título. Os média em falta mostram um marcador.",
         "Exported.": "Exportado.",
         "Fetch": "Obter",
         "Fetch now": "Obter agora",
@@ -93,8 +92,6 @@
         "Horizontal": "Horizontal",
         "Image title": "Título da imagem",
         "Images": "Imagens",
-        "Import / export (CSV)": "Importar / exportar (CSV)",
-        "Import CSV": "Importar CSV",
         "Import failed.": "Falha na importação.",
         "Imported {total}: {created} created, {matched} matched, {missing} missing media.": "Importado {total}: {created} criados, {matched} associados, {missing} média em falta.",
         "Importing...": "A importar...",
@@ -282,7 +279,15 @@
         "Switch between the grid, vertical, horizontal and map layouts at the top right. References with a place show up on the map.": "Alterne entre as vistas de grelha, vertical, horizontal e mapa no canto superior direito. As referências com um local aparecem no mapa.",
         "Share a board with people on your Nextcloud, with view-only or edit access, from Manage boards in the sidebar, and comment on references to discuss them.": "Partilhe um quadro com pessoas do seu Nextcloud, com acesso só de leitura ou de edição, em Gerir quadros na barra lateral, e comente as referências para as discutir.",
         "Curio turns the images, links, videos and notes you collect into visual boards you can filter, tag and share.": "O Curio transforma as imagens, ligações, vídeos e notas que recolhe em quadros visuais que pode filtrar, etiquetar e partilhar.",
-        "Paste a link from Pinterest, Instagram, YouTube or any website and it pulls in the picture, title and a snapshot for you. Upload your own photos, drop in a PDF, or jot a quick note.": "Cole uma ligação do Pinterest, Instagram, YouTube ou de qualquer site e o Curio obtém a imagem, o título e uma pré-visualização por si. Carregue as suas próprias fotos, junte um PDF ou escreva uma nota rápida."
+        "Paste a link from Pinterest, Instagram, YouTube or any website and it pulls in the picture, title and a snapshot for you. Upload your own photos, drop in a PDF, or jot a quick note.": "Cole uma ligação do Pinterest, Instagram, YouTube ou de qualquer site e o Curio obtém a imagem, o título e uma pré-visualização por si. Carregue as suas próprias fotos, junte um PDF ou escreva uma nota rápida.",
+        "Export this board as CSV. Import a CSV from Curio, Raindrop.io, Pocket, Instapaper, Diigo or a spreadsheet, a bookmarks file exported from your browser, or Pinboard JSON. A row with the same link or title as a reference updates it.": "Exporte este quadro em CSV. Importe um CSV do Curio, Raindrop.io, Pocket, Instapaper, Diigo ou de uma folha de cálculo, um ficheiro de marcadores exportado do navegador, ou um JSON do Pinboard. Uma linha com a mesma ligação ou título de uma referência atualiza-a.",
+        "Import / export": "Importar / exportar",
+        "Import bookmarks": "Importar marcadores",
+        "Import stopped after {count} rows.": "Importação interrompida após {count} linhas.",
+        "Importing {done} of {total}...": "A importar {done} de {total}...",
+        "No bookmarks found in this file.": "Não foram encontrados marcadores neste ficheiro.",
+        "Upload photos and PDFs from your phone, or share them to Curio from any app.": "Carregue fotos e PDF a partir do telemóvel, ou partilhe-os com o Curio a partir de qualquer aplicação.",
+        "Upload photos and PDFs from your phone.": "Carregue fotos e PDF a partir do telemóvel."
     },
     "pluralForm": "nplurals=2; plural=(n != 1);"
 }
