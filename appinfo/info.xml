@@ -34,7 +34,7 @@ Share a board with anyone on your Nextcloud, with view-only or full edit access.
 
 On first launch you choose the Nextcloud folder where Curio keeps its boards. Every reference becomes a real file in your Nextcloud Files, kept in a folder for its board. Drop a file into that folder and it appears on the board; rename or remove it and the board follows. Export or import a board as CSV whenever you like. Nothing is sent to a third party. Your references live on your server, under your control.
 	]]></description>
-	<version>1.0.5</version>
+	<version>1.0.6</version>
 	<licence>AGPL-3.0-or-later</licence>
 	<author mail="acknar75@gmail.com">Acknar</author>
 	<namespace>Curio</namespace>

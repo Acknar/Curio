@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\Curio\Service;
 
+use OCA\Curio\AppInfo\Application;
 use OCA\Curio\Db\Board;
 use OCA\Curio\Db\BoardMapper;
 use OCA\Curio\Db\Comment;
@@ -20,6 +21,7 @@ use OCP\Constants;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IConfig;
 use OCP\IDBConnection;
+use OCP\IGroupManager;
 use OCP\IUserManager;
 use OCP\IUserSession;
 use OCP\Share\IManager as IShareManager;
@@ -55,6 +57,7 @@ class CurioService {
 		private IConfig $config,
 		private IShareManager $shareManager,
 		private LoggerInterface $logger,
+		private IGroupManager $groupManager,
 	) {
 	}
 
@@ -90,6 +93,7 @@ class CurioService {
 				'tags' => [],
 				'folders' => [],
 				'settings' => $this->getSettings(),
+				'map' => $this->mapConfig(),
 			];
 		}
 
@@ -146,6 +150,7 @@ class CurioService {
 			'tags' => $this->tagService->listTags($fileIds, $uid),
 			'folders' => array_map(static fn (Folder $f) => $f->jsonSerialize(), $this->folders->findOwned($uid)),
 			'settings' => $this->getSettings(),
+			'map' => $this->mapConfig(),
 		];
 	}
 
@@ -1075,6 +1080,38 @@ class CurioService {
 		$this->assertOwner($f->getOwner());
 		$this->tagService->clearFolder($f->getId(), $this->uid());
 		$this->folders->delete($f);
+	}
+
+	/* ===================== MAP TILES ===================== */
+
+	/**
+	 * Basemap configuration for the map view. CARTO basemaps need an API key; it is
+	 * one key for the whole server, set by an administrator. The key is not a secret
+	 * (it travels in every tile URL the browser requests) and is protected instead by
+	 * the domain restrictions set in the CARTO dashboard.
+	 *
+	 * @return array{key:string,canEdit:bool}
+	 */
+	public function mapConfig(): array {
+		$uid = $this->uid();
+		return [
+			'key' => $this->config->getAppValue(Application::APP_ID, 'carto_api_key', ''),
+			'canEdit' => $uid !== '' && $this->groupManager->isAdmin($uid),
+		];
+	}
+
+	/** Admin only (enforced by the controller). An empty key removes it. */
+	public function setMapKey(string $key): array {
+		$key = trim($key);
+		if ($key !== '' && !preg_match('/^[A-Za-z0-9_\-]{8,200}$/', $key)) {
+			throw new \InvalidArgumentException('That does not look like a CARTO API key');
+		}
+		if ($key === '') {
+			$this->config->deleteAppValue(Application::APP_ID, 'carto_api_key');
+		} else {
+			$this->config->setAppValue(Application::APP_ID, 'carto_api_key', $key);
+		}
+		return $this->mapConfig();
 	}
 
 	/* ===================== SETTINGS ===================== */

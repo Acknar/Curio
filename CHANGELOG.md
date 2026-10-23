@@ -4,6 +4,13 @@ All notable changes to Curio are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.0.6 - 2026-10-23
+
+### Fixed
+
+- Map view: CARTO now requires an API key for its basemaps, and tiles requested without one carry an "API key required" watermark. Administrators can paste a free key from carto.com/basemaps/apikey in Curio's Settings (a new "Map tiles (CARTO API key)" field, shown to administrators only), or set it with `occ config:app:set curio carto_api_key --value=YOUR_KEY`. The key applies to every user on the server. Until a key is set, the map shows a notice pointing to Settings (or, for other users, asking them to contact their administrator).
+- Map tiles now send the page origin as the referrer. Nextcloud pages send none by default, which made a CARTO key restricted to the Nextcloud domain refuse every tile.
+
 ## 1.0.5 - 2026-07-31
 
 ### Fixed

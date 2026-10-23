@@ -132,6 +132,10 @@
 			<div v-else-if="error" class="empty"><p>{{ error }}</p></div>
 			<div v-else-if="settings.layout === 'map'" class="rb-map-wrap">
 				<div ref="mapEl" class="rb-map"></div>
+				<div v-if="!mapKey" class="rb-map-keynote">
+					<span>{{ mapCanEdit ? tr('The map needs a free CARTO API key. Add it in Settings.') : tr('The map needs a CARTO API key. Ask your Nextcloud administrator to add one in Curio settings.') }}</span>
+					<button v-if="mapCanEdit" class="btn" @click="openSettings">{{ tr('Open settings') }}</button>
+				</div>
 				<div v-if="!locatedRefs.length" class="rb-map-empty"><span v-html="icon('pin', 34)" /><p>{{ tr('No references have a location yet. Add one from a reference\'s Location section.') }}</p></div>
 			</div>
 			<div v-else class="grid" :class="[gridClass, { 'show-labels': settings.labels }]">
@@ -586,6 +590,11 @@
 						</div>
 						<div class="hint" style="margin-top:6px">{{ dataMsg || tr('Export this board to a spreadsheet, or import rows and match them to files by title. Missing media shows a placeholder.') }}</div>
 					</div>
+					<div v-if="mapCanEdit" class="field">
+						<label>{{ tr('Map tiles (CARTO API key)') }}</label>
+						<div class="urlrow"><input v-model="mapKeyInput" :placeholder="tr('Paste your CARTO basemaps key')" spellcheck="false" autocomplete="off" @keydown.enter.prevent="saveMapKey"><button class="btn" :disabled="mapKeyBusy || mapKeyInput.trim() === mapKey" @click="saveMapKey">{{ tr('Save') }}</button></div>
+						<div class="hint" style="margin-top:6px">{{ mapKeyMsg || tr('The map view uses CARTO basemaps, which need a free API key from carto.com/basemaps/apikey. It applies to everyone on this Nextcloud.') }}</div>
+					</div>
 				</div>
 				<div class="mfoot"><button class="btn primary" @click="settingsOpen = false">{{ tr('Done') }}</button></div>
 			</div>
@@ -681,6 +690,7 @@ export default {
 			shareOpen: false, shareBoardRef: null, shareUser: '', sharePerm: 'edit', sharing: false, shareMsg: '', shareSug: [],
 			manageTagsOpen: false, manageBoardsOpen: false, settingsOpen: false, deleteConfirm: null, deletingBoard: false,
 			dataBoardId: null, dataMsg: '', dataBusy: false,
+			mapKey: '', mapCanEdit: false, mapKeyInput: '', mapKeyBusy: false, mapKeyMsg: '',
 			toasts: [], toastSeq: 0, addWarn: false, fetched: false, dragOver: false, dragTag: null, dragOverFolder: null, boardPickerOpen: false,
 			filterTypes: [], typeMenuOpen: false, currentIndexKey: '',
 			imgAspect: {}, scrollable: false,
@@ -846,6 +856,7 @@ export default {
 				this.folderConfigured = !!data.folderConfigured
 				this.currentUser = data.currentUser || this.currentUser
 				this.settings = data.settings || this.settings
+				this.applyMapConfig(data.map)
 				if (data.suggestedFolder && !this.setupName) this.setupName = data.suggestedFolder
 				this.error = null
 				return
@@ -861,7 +872,25 @@ export default {
 			this.tags = data.tags
 			this.folders = data.folders.map(f => ({ ...f }))
 			this.settings = data.settings
+			this.applyMapConfig(data.map)
 			this.error = null
+		},
+		applyMapConfig(m) {
+			this.mapKey = (m && m.key) || ''
+			this.mapCanEdit = !!(m && m.canEdit)
+			this.mapKeyInput = this.mapKey
+		},
+		async saveMapKey() {
+			if (this.mapKeyBusy) return
+			this.mapKeyBusy = true; this.mapKeyMsg = ''
+			try {
+				const { data } = await axios.put(api('/map-key'), { key: this.mapKeyInput.trim() })
+				this.applyMapConfig(data)
+				this.mapKeyMsg = this.mapKey ? this.tr('Map key saved.') : this.tr('Map key removed.')
+				this.swapMapTiles()
+			} catch (e) {
+				this.mapKeyMsg = (e && e.response && e.response.data && e.response.data.error) || this.tr('Could not save the map key.')
+			} finally { this.mapKeyBusy = false }
 		},
 		async submitCreateFolder() {
 			const name = (this.setupName || '').trim()
@@ -1452,11 +1481,15 @@ export default {
 		/* ---- map view (D) ---- */
 		// CARTO minimalist basemaps, switched with the theme. Tiles are images so the
 		// existing img CSP ('*') covers them; Leaflet + markercluster are bundled (no CDN).
+		// CARTO needs the server's API key on every tile (without it tiles carry an "API
+		// key required" watermark). Nextcloud pages send no Referer, so tiles opt back in
+		// to sending the origin: a key restricted to this domain then works.
 		mapTiles() {
 			const dark = this.theme === 'dark';
+			const key = this.mapKey ? '?key=' + encodeURIComponent(this.mapKey) : '';
 			return {
-				url: 'https://{s}.basemaps.cartocdn.com/' + (dark ? 'dark_all' : 'light_all') + '/{z}/{x}/{y}{r}.png',
-				opts: { subdomains: 'abcd', maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO' },
+				url: 'https://{s}.basemaps.cartocdn.com/' + (dark ? 'dark_all' : 'light_all') + '/{z}/{x}/{y}{r}.png' + key,
+				opts: { subdomains: 'abcd', maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO', referrerPolicy: 'strict-origin-when-cross-origin' },
 			};
 		},
 		// Rounded-square thumbnail tile for a ref (used by both single markers and the

@@ -549,6 +549,8 @@
 .curio .rb-map { position: absolute; inset: 0; background: var(--surface-2, #e9edf2); }
 .curio[data-rbtheme="dark"] .rb-map { background: #14171c; }
 .curio .rb-map-empty { position: absolute; z-index: 500; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; color: var(--text-soft); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 26px; max-width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,.16); pointer-events: none; }
+.curio .rb-map-keynote { position: absolute; z-index: 600; left: 50%; top: 12px; transform: translateX(-50%); width: max-content; max-width: calc(100% - 24px); display: flex; align-items: center; gap: 10px; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 12px; padding: 8px 8px 8px 14px; font-size: 13px; box-shadow: var(--shadow-lg); }
+.curio .rb-map-keynote .btn { padding: 6px 12px; font-size: 13px; flex: none; }
 .curio .rb-map-empty p { margin: 8px 0 0; font-size: 13.5px; }
 /* Leaflet resets: we use divIcons, so drop the default white icon chrome. */
 .curio .leaflet-div-icon { background: transparent; border: none; }

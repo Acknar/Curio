@@ -19,6 +19,16 @@ rename or remove it and the board follows.
 - PHP 8.1+
 - `imagick` recommended for PDF page previews
 
+## Map tiles
+
+The map layout uses CARTO basemaps, which need a free API key. Get one at
+https://carto.com/basemaps/apikey/, then either paste it in Curio > Settings >
+"Map tiles (CARTO API key)" as an administrator, or run:
+
+```
+occ config:app:set curio carto_api_key --value=YOUR_KEY
+```
+
 ## Install
 
 Install from the Nextcloud App Store, or place this folder at
@@ -36,6 +46,13 @@ The frontend bundle in `js/` is prebuilt. To rebuild it after changing `src/`:
 npm install
 npm run build
 ```
+
+## Android app
+
+The `android/` folder holds Curio for Android: the full Curio app on a phone,
+plus clipping from the share menu of Instagram, Pinterest, TikTok or any app.
+See [android/README.md](android/README.md). It is not part of the Nextcloud app;
+leave `android/`, `.github/` and `node_modules/` out when packaging the app.
 
 ## License
 

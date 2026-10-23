@@ -49,6 +49,7 @@ return [
 		// settings
 		['name' => 'api#getSettings', 'url' => '/api/settings', 'verb' => 'GET'],
 		['name' => 'api#updateSettings', 'url' => '/api/settings', 'verb' => 'PUT'],
+		['name' => 'api#setMapKey', 'url' => '/api/map-key', 'verb' => 'PUT'],
 
 		// base folder (first-run setup)
 		['name' => 'api#setBaseFolder', 'url' => '/api/base-folder', 'verb' => 'POST'],

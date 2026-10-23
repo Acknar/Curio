@@ -212,6 +212,15 @@ OC.L10N.register(
     "Muted": "Gedämpft",
     "System": "System",
     "Light": "Hell",
-    "Dark": "Dunkel"
+    "Dark": "Dunkel",
+    "The map needs a free CARTO API key. Add it in Settings.": "Die Karte benötigt einen kostenlosen CARTO-API-Schlüssel. Füge ihn in den Einstellungen hinzu.",
+    "The map needs a CARTO API key. Ask your Nextcloud administrator to add one in Curio settings.": "Die Karte benötigt einen CARTO-API-Schlüssel. Bitte deine Nextcloud-Administration, einen in den Curio-Einstellungen hinzuzufügen.",
+    "Open settings": "Einstellungen öffnen",
+    "Map tiles (CARTO API key)": "Kartenkacheln (CARTO-API-Schlüssel)",
+    "Paste your CARTO basemaps key": "CARTO-Basemaps-Schlüssel einfügen",
+    "The map view uses CARTO basemaps, which need a free API key from carto.com/basemaps/apikey. It applies to everyone on this Nextcloud.": "Die Kartenansicht nutzt CARTO-Basemaps, die einen kostenlosen API-Schlüssel von carto.com/basemaps/apikey benötigen. Er gilt für alle auf dieser Nextcloud.",
+    "Map key saved.": "Kartenschlüssel gespeichert.",
+    "Map key removed.": "Kartenschlüssel entfernt.",
+    "Could not save the map key.": "Der Kartenschlüssel konnte nicht gespeichert werden."
 },
     "nplurals=2; plural=(n != 1);");
