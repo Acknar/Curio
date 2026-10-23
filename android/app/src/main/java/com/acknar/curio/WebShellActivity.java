@@ -43,6 +43,7 @@ abstract class WebShellActivity extends Activity {
 		root.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 		setContentView(root);
 		Ui.fitSystemBars(root);
+		if (!transparent()) Ui.applyLook(this, root, Prefs.get(this).optJSONObject("look"));
 
 		WebSettings s = web.getSettings();
 		s.setJavaScriptEnabled(true);

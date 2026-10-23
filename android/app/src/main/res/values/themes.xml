@@ -12,7 +12,7 @@
 	<!-- The share sheet opens as a translucent panel over the app the user came from. -->
 	<style name="Theme.Curio.Share">
 		<item name="android:windowIsTranslucent">true</item>
-		<item name="android:windowBackground">@color/scrim</item>
+		<item name="android:windowBackground">@android:color/transparent</item>
 		<item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
 	</style>
 </resources>

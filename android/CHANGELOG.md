@@ -1,0 +1,21 @@
+# Changelog
+
+All notable changes to Curio for Android are documented here. The project
+follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## 1.1.0 - 2026-10-23
+
+### Added
+
+- The app opens straight into Curio from your Nextcloud, full screen, with Nextcloud's top bar hidden. Back closes Curio's dialogs and sidebar first. "App settings" sits under Curio's own Settings in the sidebar.
+- The share dialog, connection screen and app settings now use Curio's own stylesheet, icons and translations, and follow the theme, accent colour and language of your Curio. App-only strings are translated in French, Spanish, German, Italian, Portuguese and Dutch.
+- Curio refreshes after something is added from the share menu.
+- Offline screen with Retry when the server cannot be reached; a page that lands on the Nextcloud login after the session expires signs in again with the app password.
+
+### Changed
+
+- "Disconnect" now ends only the Nextcloud session on the phone and keeps site sign-ins.
+
+## 1.0.0 - 2026-10-23
+
+First version: share target replacing the Curio Web Clipper, with on-device extraction for Instagram, Pinterest, TikTok, X, Reddit, YouTube, Vimeo, Facebook, Threads and any web page; Nextcloud Login Flow v2; boards viewer.

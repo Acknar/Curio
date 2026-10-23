@@ -7,6 +7,8 @@ on:
       - '**'
     paths:
       - 'android/**'
+      - 'src/styles.css'
+      - 'l10n/**'
       - '.github/workflows/android.yml'
     tags:
       - 'android-v*'

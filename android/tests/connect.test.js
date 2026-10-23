@@ -1,13 +1,14 @@
-// The home screen's Nextcloud Login Flow v2, against a fake server.
+// The connection screen's Nextcloud Login Flow v2, against a fake server.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
-const { UI, fakeNet } = require('./helpers');
+const { UI, fakeNet, curioAsset } = require('./helpers');
 
 test('Login Flow v2: opens the login page, polls, saves the app password, checks Curio', async () => {
 	let config = {};
 	let opened = '';
+	let openedCurio = false;
 	let polls = 0;
 	const log = [];
 	const net = fakeNet([
@@ -17,7 +18,7 @@ test('Login Flow v2: opens the login page, polls, saves the app password, checks
 		{ match: 'https://cloud.example.com/index.php/login/v2', res: { contentType: 'application/json', body: JSON.stringify({ poll: { token: 'tok', endpoint: 'https://cloud.example.com/index.php/login/v2/poll' }, login: 'https://cloud.example.com/index.php/login/v2/flow/abc' }) } },
 		{ match: 'https://cloud.example.com/index.php/apps/curio/api/clip/ping', res: { contentType: 'application/json', body: '{"ok":true,"user":"tom","version":"1.0.5"}' } },
 	], log);
-	const dom = await JSDOM.fromFile(path.join(UI, 'home.html'), {
+	const dom = await JSDOM.fromFile(path.join(UI, 'connect.html'), {
 		runScripts: 'dangerously',
 		resources: 'usable',
 		beforeParse(window) {
@@ -29,17 +30,19 @@ test('Login Flow v2: opens the login page, polls, saves the app password, checks
 				request: (id, s) => net(JSON.parse(s)).then((r) => window.CurioNative._resolve(id, JSON.stringify(r))),
 				openExternal: (u) => { opened = u; },
 				toast: () => {},
+				asset: curioAsset,
+				openCurio: () => { openedCurio = true; },
 			};
 		},
 	});
 	const doc = dom.window.document;
 	await new Promise((r) => dom.window.addEventListener('load', r));
-	assert.ok(!doc.getElementById('v-connect').classList.contains('hidden'));
+	assert.equal(doc.querySelector('.mhead h2').textContent, 'Welcome to Curio');
 	doc.getElementById('cServer').value = 'cloud.example.com/';
 	doc.getElementById('cLogin').click();
 	const t0 = Date.now();
-	while (doc.getElementById('v-home').classList.contains('hidden')) {
-		if (Date.now() - t0 > 9000) throw new Error('never reached home: ' + doc.getElementById('cStatus').textContent);
+	while (!openedCurio) {
+		if (Date.now() - t0 > 9000) throw new Error('never opened Curio: ' + doc.getElementById('cStatus').textContent);
 		await new Promise((r) => setTimeout(r, 50));
 	}
 	assert.equal(opened, 'https://cloud.example.com/index.php/login/v2/flow/abc');
@@ -48,5 +51,4 @@ test('Login Flow v2: opens the login page, polls, saves the app password, checks
 	assert.equal(config.appPassword, 'app-pass-123');
 	assert.equal(config.user, 'tom');
 	assert.equal(config.curioVersion, '1.0.5');
-	assert.equal(doc.getElementById('hUser').textContent, 'tom');
 });

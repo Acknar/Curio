@@ -5,7 +5,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
-const { UI, fixture, fakeNet } = require('./helpers');
+const { UI, fixture, fakeNet, curioAsset } = require('./helpers');
 
 const SERVER = 'https://cloud.example.com';
 const API = SERVER + '/index.php/apps/curio/api/clip';
@@ -27,7 +27,7 @@ function curioRoutes(rec, fetchMeta) {
 }
 
 async function openSheet({ shared, routes, sessions, config }) {
-	const rec = { refs: [], uploads: [], detect: [], closed: false, auth: '' };
+	const rec = { refs: [], uploads: [], detect: [], closed: false, auth: '', clipped: false };
 	const net = fakeNet([...curioRoutes(rec, routes.fetchMeta), ...routes.list]);
 	const dom = await JSDOM.fromFile(path.join(UI, 'clip.html'), {
 		runScripts: 'dangerously',
@@ -46,13 +46,15 @@ async function openSheet({ shared, routes, sessions, config }) {
 					run.then((res) => window.CurioNative._resolve(id, JSON.stringify(res)));
 				},
 				close: () => { rec.closed = true; },
+				clipped: () => { rec.clipped = true; },
+				asset: curioAsset,
 				openSettings: () => {},
 				toast: () => {},
 			};
 		},
 	});
 	const w = dom.window;
-	await waitFor(() => !w.document.getElementById('form').classList.contains('hidden') || !w.document.getElementById('setup').classList.contains('hidden'));
+	await waitFor(() => !w.document.getElementById('btnAdd').disabled || !w.document.getElementById('setup').classList.contains('hidden'));
 	return { w, doc: w.document, rec };
 }
 
@@ -65,7 +67,7 @@ async function waitFor(fn, ms = 4000) {
 }
 
 async function submit(ctx) {
-	ctx.doc.getElementById('form').dispatchEvent(new ctx.w.Event('submit', { cancelable: true }));
+	ctx.doc.getElementById('btnAdd').click();
 	await waitFor(() => ctx.rec.refs.length > 0 || !ctx.doc.getElementById('err').classList.contains('hidden'));
 	return ctx.rec.refs[0];
 }
@@ -77,7 +79,7 @@ test('Instagram reel (signed in): caption cleaned, tags matched, reel stored as 
 		routes: { list: [{ match: 'https://www.instagram.com/api/v1/media/', res: { contentType: 'application/json', body: fixture('instagram-reel-api.json') } }] },
 	});
 	const { doc, rec } = ctx;
-	assert.equal(doc.getElementById('typeChip').textContent, 'Video');
+	assert.match(doc.getElementById('fetchMsg').textContent, /^Video · Instagram$/);
 	assert.equal(doc.getElementById('title').value, 'Street food tour in Bangkok, part 3');
 	assert.equal(doc.getElementById('board').value, '7', 'default board preselected');
 	const pills = [...doc.querySelectorAll('.tgpill')].map((p) => p.textContent.replace('✕', '').trim());
@@ -96,6 +98,7 @@ test('Instagram reel (signed in): caption cleaned, tags matched, reel stored as 
 	assert.equal(rec.uploads[1].fromUrl, 'https://scontent.cdninstagram.com/reel_720.mp4');
 	assert.equal(rec.uploads[1].expect, 'video/');
 	assert.equal(rec.auth, 'Basic ' + Buffer.from('tom:aaaaa-bbbbb').toString('base64'));
+	assert.ok(rec.clipped, 'Curio is told to refresh');
 	await waitFor(() => rec.closed, 3000);
 });
 
@@ -105,16 +108,16 @@ test('Instagram post (not signed in): embed caption beats the server login wall;
 		routes: { list: [{ match: 'https://www.instagram.com/p/C8xYz12AbCd/embed/captioned/', res: { body: fixture('instagram-embed.html') } }] },
 	});
 	const { doc } = ctx;
-	assert.equal(doc.getElementById('typeChip').textContent, 'Image');
+	assert.match(doc.getElementById('fetchMsg').textContent, /^Image link · Instagram$/);
 	assert.equal(doc.getElementById('title').value, 'Golden hour at the Calanques de Cassis');
 	assert.equal(doc.getElementById('desc').value, 'Hiked from Port-Miou with');
 	assert.equal(doc.getElementById('notes').children.length, 0);
 	assert.ok(doc.querySelectorAll('.imgpick-thumb').length >= 3, 'carousel chooser');
-	const chips = [...doc.querySelectorAll('#hashSug .chip')].map((c) => c.textContent);
+	const chips = [...doc.querySelectorAll('#hashSug .hashsug-chip')].map((c) => c.textContent);
 	assert.deepEqual(chips, ['#calanques', '#provence', '#hiking']);
 
 	// Turn one hashtag into a new tag, as in the app.
-	doc.querySelector('#hashSug .chip').click();
+	doc.querySelector('#hashSug .hashsug-chip').click();
 	const ref = await submit(ctx);
 	assert.equal(ref.type, 'image_url');
 	assert.equal(ref.img, 'curio-upload:img1');
@@ -158,4 +161,18 @@ test('Photo shared from the gallery is uploaded as an image reference', async ()
 test('Not connected: the sheet asks to connect instead of clipping', async () => {
 	const ctx = await openSheet({ shared: { text: 'https://example.com' }, routes: { list: [] }, config: {} });
 	assert.ok(!ctx.doc.getElementById('setup').classList.contains('hidden'));
+});
+
+test('Share sheet follows Curio\'s language and theme', async () => {
+	const ctx = await openSheet({
+		shared: { text: 'https://www.instagram.com/p/C8xYz12AbCd/', files: [] },
+		config: { server: SERVER, user: 'tom', appPassword: 'aaaaa-bbbbb', look: { theme: 'dark', primary: '#00679e', lang: 'fr' } },
+		routes: { list: [{ match: 'https://www.instagram.com/p/C8xYz12AbCd/embed/captioned/', res: { body: fixture('instagram-embed.html') } }] },
+	});
+	const { doc } = ctx;
+	assert.equal(doc.getElementById('root').getAttribute('data-rbtheme'), 'dark');
+	assert.equal(doc.getElementById('root').style.getPropertyValue('--color-primary-element'), '#00679e');
+	assert.equal(doc.querySelector('.mhead h2').textContent, 'Ajouter une référence');
+	assert.equal(doc.getElementById('btnAdd').textContent, 'Ajouter au tableau');
+	assert.match(doc.getElementById('fetchMsg').textContent, /Instagram$/);
 });

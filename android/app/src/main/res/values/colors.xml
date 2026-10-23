@@ -2,5 +2,4 @@
 <resources>
 	<color name="curio_blue">#0069C2</color>
 	<color name="bg">#FFFFFF</color>
-	<color name="scrim">#66000000</color>
 </resources>

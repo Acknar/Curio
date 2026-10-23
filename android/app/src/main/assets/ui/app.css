@@ -1,0 +1,50 @@
+/* app.css - page frame for the app's own screens. Everything visual comes from
+   Curio's stylesheet (../curio/styles.css); this only sets what Nextcloud would
+   otherwise provide around it (page box, base font) and a few app-only pieces. */
+html, body { margin: 0; padding: 0; height: 100%; }
+body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", Ubuntu, sans-serif; -webkit-tap-highlight-color: transparent; }
+.curio { --header-height: 0px; height: 100%; }
+.curio.sheet { background: transparent; }
+.curio.page { overflow-y: auto; display: block; }
+.hidden { display: none !important; }
+
+/* Curio's modal, filling a phone screen as an app page. */
+.curio .modal.pagemodal { width: min(560px, 100%); margin: 0 auto; min-height: 100%; border-radius: 0; box-shadow: none; max-height: none; display: block; background: var(--surface); }
+.curio .pagemodal .mhead { position: sticky; top: 0; background: var(--surface); z-index: 5; padding: 16px 20px 10px; gap: 10px; justify-content: flex-start; }
+.curio .pagemodal .mhead h2 { flex: 1; }
+.curio .pagemodal .mhead .close { width: 32px; height: 32px; border-radius: 8px; }
+.curio .pagemodal .mbody { overflow: visible; }
+
+/* Brand block on the connection screen. */
+.curio .brand { display: flex; align-items: center; gap: 12px; color: var(--primary); margin: 4px 0 18px; }
+.curio .brand b { font-size: 22px; color: var(--text); }
+.curio .lead { margin: 0 0 18px; color: var(--text); line-height: 1.5; }
+.curio .setup-or { display: flex; align-items: center; gap: 10px; color: var(--text-soft); font-size: 12px; margin: 18px 0; }
+.curio .setup-or::before, .curio .setup-or::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.curio .btn.block { width: 100%; justify-content: center; }
+.curio .status { font-size: 13px; margin: 10px 0 0; min-height: 18px; color: var(--text-soft); }
+.curio .status.ok { color: #2b8a3e; }
+.curio .status.err { color: #d94141; }
+.curio .waitcard { display: flex; align-items: center; gap: 10px; background: var(--surface-2); border-radius: 10px; padding: 12px; margin-top: 14px; font-size: 13.5px; }
+.curio .spin { width: 18px; height: 18px; flex: 0 0 18px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--primary); animation: curio-spin .7s linear infinite; }
+@keyframes curio-spin { to { transform: rotate(360deg); } }
+
+/* Settings rows, built like Curio's sidebar board rows. */
+.curio .siterow { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-bottom: 1px solid var(--border); }
+.curio .siterow:last-child { border-bottom: none; }
+.curio .siterow .owner-av { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 700; flex: 0 0 30px; }
+.curio .siterow .label { flex: 1; min-width: 0; }
+.curio .siterow .label b { display: block; font-size: 14px; font-weight: 600; }
+.curio .siterow .label span { font-size: 12px; color: var(--text-soft); }
+.curio .siterow .label span.on { color: var(--primary); font-weight: 600; }
+.curio .siterow .btn { padding: 7px 12px; font-size: 13px; }
+.curio .card-box { background: var(--surface-2); border-radius: 10px; padding: 12px; font-size: 13.5px; }
+.curio .about { text-align: center; color: var(--text-soft); font-size: 12px; margin: 26px 0 8px; }
+
+/* Share sheet extras. */
+.curio .fetchprev.loading img { display: none; }
+.curio .fetchmsg b { color: var(--text); font-weight: 600; }
+.curio .sheet-note { background: var(--primary-soft); color: var(--text); border-radius: 8px; padding: 9px 12px; font-size: 12.5px; margin: 0 0 12px; }
+.curio .sheet-note a { color: var(--primary); font-weight: 600; }
+.curio .filebox { display: flex; align-items: center; gap: 10px; text-align: left; cursor: default; }
+.curio .toasts .toast.success { border-color: #55b877; }

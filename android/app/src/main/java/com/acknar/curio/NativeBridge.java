@@ -97,6 +97,25 @@ class NativeBridge {
 		cm.flush();
 	}
 
+	/** Expire the Nextcloud session cookies (on disconnect), keeping site sign-ins. */
+	@JavascriptInterface
+	public void clearServerSession() {
+		String server = Prefs.server(activity);
+		if (server.isEmpty()) return;
+		CookieManager cm = CookieManager.getInstance();
+		String c = cm.getCookie(server);
+		if (c != null) {
+			String path = Uri.parse(server).getPath();
+			for (String part : c.split(";")) {
+				String name = part.split("=", 2)[0].trim();
+				if (name.isEmpty()) continue;
+				cm.setCookie(server, name + "=; Max-Age=0; Path=/");
+				if (path != null && path.length() > 1) cm.setCookie(server, name + "=; Max-Age=0; Path=" + path);
+			}
+		}
+		cm.flush();
+	}
+
 	/** Async work: spec.op is "http" or "render". */
 	@JavascriptInterface
 	public void request(final String id, final String specJson) {
@@ -136,9 +155,39 @@ class NativeBridge {
 		});
 	}
 
+	/** Connected (or reconnected): open Curio and close the connection screen. */
 	@JavascriptInterface
-	public void openBoards() {
-		activity.runOnUiThread(() -> activity.startActivity(new Intent(activity, BoardsActivity.class)));
+	public void openCurio() {
+		activity.runOnUiThread(() -> {
+			activity.startActivity(new Intent(activity, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+			activity.finish();
+		});
+	}
+
+	/** Disconnected: back to the connection screen, closing everything else. */
+	@JavascriptInterface
+	public void openConnect() {
+		activity.runOnUiThread(() -> {
+			activity.startActivity(new Intent(activity, ConnectActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+			activity.finish();
+		});
+	}
+
+	/** A reference was added from the share menu; Curio refreshes when next shown. */
+	@JavascriptInterface
+	public void clipped() {
+		try {
+			Prefs.merge(activity, new JSONObject().put("clipStamp", System.currentTimeMillis()));
+		} catch (JSONException ignored) {
+			// constant key
+		}
+	}
+
+	/** Text of a bundled file: Curio's translations (curio/l10n/*.json) and the like. */
+	@JavascriptInterface
+	public String asset(String path) {
+		if (path == null || path.contains("..") || !(path.startsWith("curio/") || path.startsWith("ui/"))) return "";
+		return Assets.read(activity, path);
 	}
 
 	@JavascriptInterface
@@ -153,11 +202,10 @@ class NativeBridge {
 		}
 	}
 
-	/** From the share sheet: open the app's settings screen. */
+	/** Open the app's settings screen (from the share sheet). */
 	@JavascriptInterface
 	public void openSettings() {
-		activity.runOnUiThread(() -> activity.startActivity(new Intent(activity, MainActivity.class)
-				.putExtra(MainActivity.EXTRA_VIEW, "settings")
+		activity.runOnUiThread(() -> activity.startActivity(new Intent(activity, SettingsActivity.class)
 				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
 	}
 

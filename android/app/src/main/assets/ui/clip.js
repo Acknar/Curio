@@ -1,12 +1,12 @@
-// clip.js - the share sheet. Same form and behaviour as the Curio Web Clipper
-// popup (board, image + chooser, title, description, detected location,
-// hashtag-derived tags, then POST /api/clip/reference), fed by extract.js instead
-// of a content script, and uploading media through the phone.
+// clip.js - the share sheet: Curio's "Add reference" dialog (same markup, styles,
+// wording and behaviour as the app's Link / URL tab), fed by extract.js from what
+// was shared, uploading media through the phone, then POST /api/clip/reference.
 
-/* global Android, CurioNative, CURIO, TagLogic, Cleanup, Extract, parseVideo, domainOf */
+/* global Android, CurioNative, CURIO, Look, TagLogic, Cleanup, Extract, parseVideo, domainOf */
 
 const $ = (id) => document.getElementById(id);
 const show = (el, on) => { el.classList.toggle('hidden', !on); };
+const tr = (s, v) => Look.tr(s, v);
 
 // Platforms where the phone reads more than the Nextcloud server can (login walls,
 // datacentre IP blocks). There the on-device result wins and the server only fills
@@ -17,6 +17,7 @@ let cfg = null;
 let state = null;      // { boards, tags, folders, lang }
 let clip = null;       // payload from extract.js
 let rawTitle = '', rawDesc = '';
+let busy = false;
 const sel = {
 	type: 'link',
 	image: '',
@@ -27,17 +28,9 @@ const sel = {
 	geo: null,
 };
 
-function textOn(hex) {
-	if (!hex) return '#ffffff';
-	const c = hex.replace('#', '');
-	if (c.length < 6) return '#ffffff';
-	const r = parseInt(c.substr(0, 2), 16), g = parseInt(c.substr(2, 2), 16), b = parseInt(c.substr(4, 2), 16);
-	return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? '#111111' : '#ffffff';
-}
-
-function typeLabel(t) {
-	return { image_url: 'Image', image: 'Image', video: 'Video', pdf: 'PDF', text: 'Note', link: 'Link' }[t] || 'Link';
-}
+// Curio's TYPE_NAME.
+const TYPE_NAME = { image: 'Image', link: 'Web page', image_url: 'Image link', text: 'Text note', video: 'Video', pdf: 'PDF' };
+const SITE_NAMES = { instagram: 'Instagram', pinterest: 'Pinterest', tiktok: 'TikTok', x: 'X', reddit: 'Reddit', youtube: 'YouTube', vimeo: 'Vimeo', facebook: 'Facebook', threads: 'Threads' };
 
 function kindToType(kind) {
 	return {
@@ -46,9 +39,10 @@ function kindToType(kind) {
 	}[kind] || 'link';
 }
 
-const SITE_NAMES = { instagram: 'Instagram', pinterest: 'Pinterest', tiktok: 'TikTok', x: 'X', reddit: 'Reddit', youtube: 'YouTube', vimeo: 'Vimeo', facebook: 'Facebook', threads: 'Threads' };
+function setMsg(html) { $('fetchMsg').innerHTML = html; }
+function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
-function setLoading(txt) { $('loadingTxt').textContent = txt; }
+function close() { Android.close(); }
 
 window.CurioApp = {
 	back() {
@@ -60,14 +54,16 @@ window.CurioApp = {
 };
 
 async function init() {
+	Look.init($('root'));
 	wireStatic();
 	cfg = CURIO.getConfig();
 	if (!CURIO.configured(cfg)) {
-		return showSetup('Connect Curio to your Nextcloud once, then share from any app to clip.');
+		return showSetup(tr('Connect Curio to your Nextcloud once, then share from any app to add references.'));
 	}
+	setMsg(tr('Fetching...'));
 
 	const shared = CurioNative.shared();
-	Extract.progress = (t) => setLoading(t);
+	Extract.progress = (t) => setMsg(esc(tr(t)));
 
 	const statePromise = CURIO.state(cfg).catch((e) => ({ _error: e }));
 	clip = await Extract.run(shared);
@@ -75,39 +71,37 @@ async function init() {
 	// The server's own fetch, exactly like the app's add dialog, for links.
 	let meta = null;
 	if (clip.url && !clip.file && clip.kind !== 'text') {
-		setLoading('Asking Curio about the link...');
+		setMsg(tr('Fetching...'));
 		meta = await CURIO.fetchMeta(clip.url, cfg).catch(() => null);
 	}
 
 	state = await statePromise;
 	if (state && state._error) {
 		const e = state._error;
-		if (e.status === 401) return showSetup('Nextcloud refused the sign-in. Reconnect Curio in the app settings.');
-		if (e.status === 404) return showSetup('Curio 1.0.4 or later was not found on your Nextcloud. Update the Curio app there.');
-		return showSetup('Could not reach your Nextcloud (' + (e.message || 'network error') + ').');
+		if (e.status === 401) return showSetup(tr('Nextcloud refused the sign-in. Open Curio and connect again.'));
+		if (e.status === 404) return showSetup(tr('Curio 1.0.4 or later was not found on your Nextcloud. Update the Curio app there.'));
+		return showSetup(tr('Could not reach your Nextcloud.') + ' (' + (e.message || 'network') + ')');
 	}
 	if (state.needsFolderSetup) {
-		return showSetup('Open Curio in Nextcloud once and choose where it keeps your boards, then share again.');
+		return showSetup(tr('Open Curio once and choose where it keeps your boards, then share again.'));
 	}
 
 	TagLogic.setTags(state.tags || []);
 	buildForm(meta);
 	wireForm();
-	show($('loading'), false);
-	show($('form'), true);
+	$('btnAdd').disabled = false;
 }
 
 function wireStatic() {
-	$('btnClose').addEventListener('click', () => Android.close());
-	$('btnCancel').addEventListener('click', () => Android.close());
-	$('backdrop').addEventListener('click', () => Android.close());
-	$('btnSettings').addEventListener('click', () => { Android.openSettings(); Android.close(); });
-	$('btnConnect').addEventListener('click', () => { Android.openSettings(); Android.close(); });
+	$('btnClose').addEventListener('click', close);
+	$('btnCancel').addEventListener('click', close);
+	$('scrim').addEventListener('click', (e) => { if (e.target === $('scrim') && !busy) close(); });
+	$('btnConnect').addEventListener('click', () => Android.openCurio());
 }
 
 function showSetup(msg) {
-	show($('loading'), false);
 	show($('form'), false);
+	show($('foot'), false);
 	$('setupMsg').textContent = msg;
 	show($('setup'), true);
 }
@@ -165,9 +159,6 @@ function buildForm(m) {
 	clip.title = refined.title;
 	clip.description = refined.description;
 
-	$('typeChip').textContent = typeLabel(sel.type);
-	$('srcLabel').textContent = clip.file ? (clip.file.name || 'Shared file') : (domainOf(clip.url || clip.pageUrl) || '');
-
 	renderNotes();
 
 	const isText = sel.type === 'text';
@@ -191,7 +182,7 @@ function buildForm(m) {
 		for (const t of TagLogic.autoTagMatches(($('title').value || '') + ' \n ' + ($('desc').value || ''))) addTag(t, true);
 	}
 
-	renderImage();
+	renderPreview();
 
 	const boardSel = $('board');
 	boardSel.innerHTML = '';
@@ -214,64 +205,73 @@ function buildForm(m) {
 function renderNotes() {
 	const box = $('notes');
 	box.innerHTML = '';
-	const add = (html) => { const d = document.createElement('div'); d.className = 'note'; d.innerHTML = html; box.appendChild(d); return d; };
+	const add = (html) => { const d = document.createElement('div'); d.className = 'sheet-note'; d.innerHTML = html; box.appendChild(d); return d; };
 	if ((clip.notes || []).includes('instagram-signin')) {
-		const d = add('Instagram only showed a preview of this post. <a href="#">Sign in to Instagram</a> in Curio to clip private posts, full carousels and reels.');
-		d.querySelector('a').addEventListener('click', (e) => { e.preventDefault(); Android.openSettings(); Android.close(); });
-	} else if (clip.url && !clip.file && clip.kind !== 'text' && !clip.title && !clip.description && !sel.images.length) {
-		add('Could not read anything from ' + (SITE_NAMES[clip.site] || 'this page') + '. You can still save the link and fill in the details.');
+		const d = add(esc(tr('Instagram only showed a preview of this post.')) + ' <a href="#">' + esc(tr('Sign in to Instagram')) + '</a> ' + esc(tr('to add private posts, full carousels and reels.')));
+		d.querySelector('a').addEventListener('click', (e) => { e.preventDefault(); Android.openSettings(); close(); });
 	}
 }
 
-function renderImage() {
+// The fetch preview row: picture + what was found, like Curio's .fetchprev.
+function renderPreview() {
 	const isFile = !!clip.file;
-	const fileImg = isFile && sel.type === 'image';
-	show($('fileCard'), isFile && !fileImg);
-	if (isFile && !fileImg) {
+	const site = SITE_NAMES[clip.site] || domainOf(clip.url || clip.pageUrl) || '';
+	const kind = tr(TYPE_NAME[sel.type] || 'Web page');
+
+	if (isFile) {
+		show($('fileBox'), sel.type !== 'image');
 		const sz = clip.file.size > 0 ? ' (' + (clip.file.size / 1048576).toFixed(1) + ' MB)' : '';
-		$('fileCard').textContent = (sel.type === 'video' ? 'Video: ' : sel.type === 'pdf' ? 'PDF: ' : 'File: ') + (clip.file.name || 'shared') + sz;
-	}
-	if (fileImg) {
-		// The shared photo itself, via the content:// URI the sharing app granted.
-		sel.images = [];
-		sel.image = '';
-		show($('prevWrap'), true);
-		const img = $('prevImg');
-		img.src = clip.file.uri || '';
-		img.onerror = () => show($('prevWrap'), false);
+		$('fileIcon').innerHTML = Look.icon(sel.type === 'video' ? 'video' : sel.type === 'pdf' ? 'pdf' : 'image', 18);
+		$('fileName').textContent = (clip.file.name || 'shared') + sz;
+		if (sel.type === 'image') {
+			// The shared photo itself, via the content:// URI the sharing app granted.
+			setPreview(clip.file.uri || '', '<b>' + esc(kind) + '</b>');
+		} else {
+			show($('prevRow'), false);
+		}
 		show($('imgPick'), false);
 		return;
 	}
-
-	const hasImg = !!sel.image && sel.type !== 'text' && !isFile;
-	show($('prevWrap'), hasImg);
-	if (hasImg) {
-		const img = $('prevImg');
-		img.src = sel.image;
-		img.onerror = () => {
-			// Drop a broken candidate (an "originals" size that does not exist...) and try the next.
-			sel.images = sel.images.filter(u => u !== sel.image);
-			sel.image = sel.images[0] || '';
-			renderImage();
-		};
+	if (sel.type === 'text') {
+		show($('prevRow'), false);
+		show($('imgPick'), false);
+		return;
 	}
+	const msg = '<b>' + esc(kind) + '</b>' + (site ? ' · ' + esc(site) : '');
+	setPreview(sel.image, msg);
+
 	const row = $('imgPickRow');
 	row.innerHTML = '';
 	const many = sel.images.filter(u => !!u);
-	show($('imgPick'), hasImg && many.length > 1);
+	show($('imgPick'), many.length > 1);
 	if (many.length > 1) {
 		for (const u of many) {
 			const b = document.createElement('button');
-			b.type = 'button';
 			b.className = 'imgpick-thumb' + (u === sel.image ? ' sel' : '');
 			const im = document.createElement('img');
 			im.src = u;
-			im.onerror = () => { b.remove(); };
+			im.onerror = () => { b.remove(); sel.images = sel.images.filter(x => x !== u); };
 			b.appendChild(im);
-			b.addEventListener('click', () => { sel.image = u; renderImage(); });
+			b.addEventListener('click', () => { sel.image = u; renderPreview(); });
 			row.appendChild(b);
 		}
 	}
+}
+
+function setPreview(src, msg) {
+	show($('prevRow'), true);
+	$('prevRow').classList.toggle('loading', !src);
+	setMsg(msg);
+	const img = $('prevImg');
+	if (!src) { img.removeAttribute('src'); return; }
+	img.src = src;
+	img.onerror = () => {
+		// Drop a broken candidate (an "originals" size that does not exist...) and try the next.
+		if (clip.file) { $('prevRow').classList.add('loading'); return; }
+		sel.images = sel.images.filter(u => u !== sel.image);
+		sel.image = sel.images[0] || '';
+		renderPreview();
+	};
 }
 
 /* ---------------- tags ---------------- */
@@ -290,7 +290,7 @@ function renderTags() {
 		const pill = document.createElement('span');
 		pill.className = 'tgpill';
 		pill.style.background = t.color || '#888';
-		pill.style.color = textOn(t.color);
+		pill.style.color = Look.textOn(t.color);
 		pill.textContent = t.name + ' ';
 		const x = document.createElement('span');
 		x.className = 'x';
@@ -303,12 +303,11 @@ function renderTags() {
 
 function renderHashSug() {
 	const box = $('hashSug');
-	box.querySelectorAll('.chip').forEach(el => el.remove());
+	box.querySelectorAll('.hashsug-chip').forEach(el => el.remove());
 	show(box, sel.hashtags.length > 0);
 	for (const h of sel.hashtags) {
 		const c = document.createElement('button');
-		c.type = 'button';
-		c.className = 'chip';
+		c.className = 'hashsug-chip';
 		c.textContent = '#' + h;
 		c.addEventListener('click', () => {
 			const matches = TagLogic.matchHashtagTags(h);
@@ -336,8 +335,10 @@ function renderGeo() {
 	if (sel.geo && sel.geo.lat != null) {
 		show(d, true);
 		$('geoDetectedTxt').textContent = sel.geo.place || (Number(sel.geo.lat).toFixed(4) + ', ' + Number(sel.geo.lng).toFixed(4));
+		$('geoQuery').placeholder = tr('Change location...');
 	} else {
 		show(d, false);
+		$('geoQuery').placeholder = tr('Search a place or address...');
 	}
 }
 
@@ -364,22 +365,21 @@ async function detectLocation() {
 function renderGeoSuggestions(list) {
 	const box = $('geoSuggestions');
 	box.innerHTML = '';
-	show(box, list.length > 0 && !sel.geo);
+	show(box, list.length > 0);
 	if (!list.length) return;
 	const lbl = document.createElement('span');
-	lbl.className = 'chips-lbl';
-	lbl.textContent = list.length > 1 ? 'Suggested places:' : 'Suggested:';
+	lbl.className = 'hashsug-lbl';
+	lbl.textContent = list.length > 1 ? tr('Suggested places:') : tr('Suggested:');
 	box.appendChild(lbl);
 	for (const s of list) {
 		const c = document.createElement('button');
-		c.type = 'button';
-		c.className = 'chip';
-		c.textContent = (s.place || '').split(',')[0];
+		c.className = 'hashsug-chip';
 		c.title = s.place || '';
+		c.innerHTML = Look.icon('pin', 12) + ' ' + esc((s.place || '').split(',')[0]);
 		c.addEventListener('click', () => {
 			sel.geo = { lat: s.lat, lng: s.lng, place: s.place, source: 'geocoded' };
+			box.querySelectorAll('.hashsug-chip').forEach(x => x.classList.toggle('hashsug-chip-on', x === c));
 			renderGeo();
-			show(box, false);
 		});
 		box.appendChild(c);
 	}
@@ -399,15 +399,14 @@ function onGeoInput() {
 			show(box, rows.length > 0);
 			for (const s of rows) {
 				const r = document.createElement('div');
-				r.className = 'sug-row';
-				r.textContent = s.place;
+				r.className = 'tagsug-row';
+				r.innerHTML = '<span class="geo-sug-ic">' + Look.icon('pin', 13) + '</span><span class="geo-sug-txt">' + esc(s.place) + '</span>';
 				r.addEventListener('mousedown', (ev) => {
 					ev.preventDefault();
 					sel.geo = { lat: s.lat, lng: s.lng, place: s.place, source: 'geocoded' };
 					$('geoQuery').value = '';
 					show(box, false);
 					renderGeo();
-					show($('geoSuggestions'), false);
 				});
 				box.appendChild(r);
 			}
@@ -438,9 +437,9 @@ function wireForm() {
 		show(box, sugs.length > 0 && tagInput.value.trim().length > 0);
 		for (const t of sugs) {
 			const r = document.createElement('div');
-			r.className = 'sug-row';
+			r.className = 'tagsug-row';
 			const dot = document.createElement('span');
-			dot.className = 'sug-dot';
+			dot.className = 'tagsug-c';
 			dot.style.background = t.color || '#888';
 			r.appendChild(dot);
 			r.appendChild(document.createTextNode(t.name));
@@ -460,7 +459,7 @@ function wireForm() {
 	});
 	tagInput.addEventListener('blur', () => setTimeout(() => show($('tagSug'), false), 150));
 
-	$('form').addEventListener('submit', onSubmit);
+	$('btnAdd').addEventListener('click', onSubmit);
 }
 
 function commitTyped(name) {
@@ -509,16 +508,23 @@ async function ensureTagIds() {
 	return { ids, dropped: failed };
 }
 
-async function onSubmit(e) {
-	e.preventDefault();
+function toast(msg, kind) {
+	const t = document.createElement('div');
+	t.className = 'toast ' + (kind || '');
+	t.textContent = msg;
+	$('toasts').appendChild(t);
+}
+
+async function onSubmit() {
+	if (busy) return;
+	busy = true;
 	const btn = $('btnAdd');
 	btn.disabled = true;
-	btn.textContent = 'Adding...';
 	show($('err'), false);
 	try {
 		const mine = (state.boards || []).filter(b => b.mine);
 		const board = mine.find(b => String(b.id) === $('board').value) || mine[0];
-		if (!board) throw new Error('No board to add to.');
+		if (!board) throw new Error(tr('No board to add to.'));
 		const { ids: tagIds, dropped } = await ensureTagIds();
 		const seed = Math.floor(Math.random() * 9999);
 		const url = clip.url || '';
@@ -528,7 +534,7 @@ async function onSubmit(e) {
 
 		if (clip.file) {
 			const isVideo = sel.type === 'video';
-			btn.textContent = 'Uploading...';
+			btn.textContent = tr('Uploading...');
 			const up = await CURIO.uploadShared(clip.file.index || 0, clip.file.name, isVideo, cfg);
 			if (isVideo) {
 				payload = { type: 'video', title: title || 'Video', video: { provider: 'file', src: up.upload }, img: null, desc, tagIds, seed };
@@ -543,7 +549,7 @@ async function onSubmit(e) {
 			const posterSrc = sel.image || (v && v.thumb ? v.thumb : null);
 			const img = posterSrc ? await resolveImg(posterSrc) : null;
 			if (clip.videoFileUrl) {
-				btn.textContent = 'Saving video...';
+				btn.textContent = tr('Uploading...');
 				const stored = await storeVideo(clip.videoFileUrl);
 				if (stored) v = stored;
 			}
@@ -562,25 +568,25 @@ async function onSubmit(e) {
 			payload.geo = { lat: sel.geo.lat, lng: sel.geo.lng, place: sel.geo.place || null, source: sel.geo.source || 'page' };
 		}
 
-		btn.textContent = 'Adding...';
+		btn.textContent = tr('Add to board');
 		await CURIO.createReference(payload, cfg);
+		Android.clipped();
 
-		show($('form'), false);
-		let msg = 'Added to ' + board.name + '.';
-		if (dropped.length) msg += ' (New tags ' + dropped.join(', ') + ' were skipped; create them in Curio.)';
-		$('doneMsg').textContent = msg;
-		show($('done'), true);
-		setTimeout(() => Android.close(), dropped.length ? 2600 : 1100);
+		show($('scrim'), false);
+		let msg = tr('Added to {board}.', { board: board.name });
+		if (dropped.length) msg += ' ' + tr('New tags {tags} were skipped.', { tags: dropped.join(', ') });
+		toast(msg, 'success');
+		setTimeout(close, dropped.length ? 2600 : 1200);
 	} catch (err) {
+		busy = false;
 		btn.disabled = false;
-		btn.textContent = 'Add to board';
+		btn.textContent = tr('Add to board');
 		const el = $('err');
-		el.textContent = (err && err.message) || 'Could not add the reference.';
+		el.textContent = (err && err.message) || tr('Could not add the reference.');
 		show(el, true);
 	}
 }
 
 init().catch((e) => {
-	show($('loading'), false);
-	showSetup('Something went wrong: ' + (e && e.message ? e.message : e));
+	showSetup(tr('Something went wrong:') + ' ' + (e && e.message ? e.message : e));
 });

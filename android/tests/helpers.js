@@ -8,6 +8,14 @@ const { JSDOM } = require('jsdom');
 const UI = path.join(__dirname, '..', 'app', 'src', 'main', 'assets', 'ui');
 const FIX = path.join(__dirname, 'fixtures');
 
+// Stand-in for Android.asset(): Curio's translations live in the repository's l10n/.
+function curioAsset(p) {
+	const m = /^curio\/l10n\/([a-z]+)\.json$/.exec(p);
+	if (!m) return '';
+	const f = path.join(__dirname, '..', '..', 'l10n', m[1] + '.json');
+	return fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : '';
+}
+
 function fixture(name) {
 	return fs.readFileSync(path.join(FIX, name), 'utf8');
 }
@@ -49,4 +57,4 @@ function fakeNet(routes, log) {
 	};
 }
 
-module.exports = { UI, fixture, loadScripts, fakeNet };
+module.exports = { UI, fixture, loadScripts, fakeNet, curioAsset };

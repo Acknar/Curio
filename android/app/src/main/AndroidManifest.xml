@@ -15,6 +15,7 @@
 		<activity
 			android:name=".MainActivity"
 			android:exported="true"
+			android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
 			android:launchMode="singleTask"
 			android:windowSoftInputMode="adjustResize">
 			<intent-filter>
@@ -60,9 +61,13 @@
 		</activity>
 
 		<activity
-			android:name=".BoardsActivity"
+			android:name=".ConnectActivity"
 			android:exported="false"
-			android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+			android:windowSoftInputMode="adjustResize" />
+
+		<activity
+			android:name=".SettingsActivity"
+			android:exported="false"
 			android:windowSoftInputMode="adjustResize" />
 
 		<activity

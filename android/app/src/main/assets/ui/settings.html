@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<title>App settings</title>
+	<link rel="stylesheet" href="../curio/styles.css">
+	<link rel="stylesheet" href="app.css">
+</head>
+<body>
+	<!-- Laid out like Curio's Settings dialog, full screen. -->
+	<div class="curio page" id="root">
+		<div class="modal pagemodal">
+			<div class="mhead"><button class="close" id="btnBack" data-icon="back" data-size="20"></button><h2 data-tr="App settings">App settings</h2></div>
+			<div class="mbody">
+				<div class="field">
+					<label data-tr="Default board for the share menu">Default board for the share menu</label>
+					<select id="sBoard" class="rb-select"><option value="" data-tr="First board">First board</option></select>
+					<div class="hint" id="sBoardHint" style="margin-top:6px"></div>
+				</div>
+
+				<div class="field">
+					<label data-tr="Site sign-ins">Site sign-ins</label>
+					<div class="hint" style="margin-bottom:8px" data-tr="Sign in to a site here, on its own page, and the share menu reads posts the way you see them: private accounts, full carousels, reels. Curio never sees these passwords; the sign-in stays on this phone.">Sign in to a site here, on its own page, and the share menu reads posts the way you see them: private accounts, full carousels, reels. Curio never sees these passwords; the sign-in stays on this phone.</div>
+					<div id="sSites"></div>
+					<button class="btn danger" id="sSignOut" style="margin-top:10px" data-tr="Sign out of all sites">Sign out of all sites</button>
+				</div>
+
+				<div class="field">
+					<label data-tr="Nextcloud">Nextcloud</label>
+					<div class="card-box"><div id="sWho"></div><div class="hint" id="sVersion" style="margin-top:4px"></div></div>
+					<button class="btn danger" id="sDisconnect" style="margin-top:10px" data-tr="Disconnect">Disconnect</button>
+					<div class="hint" style="margin-top:6px" data-tr="Disconnecting forgets the app password on this phone. Revoke it in Nextcloud under Security, Devices &amp; sessions.">Disconnecting forgets the app password on this phone. Revoke it in Nextcloud under Security, Devices &amp; sessions.</div>
+				</div>
+
+				<div class="about" id="sAbout"></div>
+			</div>
+			<div class="mfoot"><button class="btn primary" id="btnDone" data-tr="Done">Done</button></div>
+		</div>
+	</div>
+	<script src="native.js"></script>
+	<script src="app-l10n.js"></script>
+	<script src="look.js"></script>
+	<script src="curio.js"></script>
+	<script src="settings.js"></script>
+</body>
+</html>

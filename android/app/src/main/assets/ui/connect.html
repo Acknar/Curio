@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<title>Curio</title>
+	<link rel="stylesheet" href="../curio/styles.css">
+	<link rel="stylesheet" href="app.css">
+</head>
+<body>
+	<div class="curio page" id="root">
+		<div class="modal pagemodal">
+			<div class="mhead"><h2 data-tr="Welcome to Curio">Welcome to Curio</h2></div>
+			<div class="mbody">
+				<div class="brand"><span id="logo"></span><b>Curio</b></div>
+				<p class="lead" data-tr="Connect to your Nextcloud to see your boards here, and add references from the share menu of Instagram, Pinterest, TikTok or any app.">Connect to your Nextcloud to see your boards here, and add references from the share menu of Instagram, Pinterest, TikTok or any app.</p>
+				<div class="field"><label data-tr="Nextcloud address">Nextcloud address</label>
+					<input id="cServer" type="url" inputmode="url" placeholder="https://cloud.example.com" spellcheck="false" autocapitalize="off">
+				</div>
+				<button class="btn primary block" id="cLogin" data-tr="Sign in with Nextcloud">Sign in with Nextcloud</button>
+				<div id="cWaiting" class="waitcard hidden"><span class="spin"></span><span data-tr="Finish signing in on the page that opened, then come back here.">Finish signing in on the page that opened, then come back here.</span></div>
+				<div id="cWaitBtns" class="hidden" style="display:flex;gap:8px;margin-top:10px">
+					<button class="btn" id="cReopen" data-tr="Open the page again">Open the page again</button>
+					<button class="btn" id="cCancel" data-tr="Cancel">Cancel</button>
+				</div>
+				<div id="cStatus" class="status"></div>
+
+				<div class="setup-or"><span data-tr="or">or</span></div>
+				<div class="field"><label data-tr="Username">Username</label><input id="mUser" spellcheck="false" autocapitalize="off"></div>
+				<div class="field"><label data-tr="App password">App password</label><input id="mPw" type="password" autocomplete="off" placeholder="xxxxx-xxxxx-xxxxx-xxxxx-xxxxx"></div>
+				<div class="hint" data-tr="Create one in Nextcloud under Personal settings, Security, Devices &amp; sessions.">Create one in Nextcloud under Personal settings, Security, Devices &amp; sessions.</div>
+				<div style="display:flex;gap:8px;margin-top:12px">
+					<button class="btn" id="mTest" data-tr="Test">Test</button>
+					<button class="btn primary" id="mSave" data-tr="Connect">Connect</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="native.js"></script>
+	<script src="app-l10n.js"></script>
+	<script src="look.js"></script>
+	<script src="curio.js"></script>
+	<script src="connect.js"></script>
+</body>
+</html>
