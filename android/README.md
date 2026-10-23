@@ -92,8 +92,10 @@ The APK is written to `app/build/outputs/apk/release/`.
 
 ### Signing
 
-Without signing secrets the APK is signed with a debug key that CI caches, so a
-new build installs over the previous one. For a permanent key, create one once:
+Without signing secrets, CI signs the APK with a key it keeps in the Actions
+cache, so a new build installs over the previous one. GitHub drops caches unused
+for 7 days, after which a new key is made and the app must be uninstalled once
+before the next update. For a permanent key, create one once:
 
 ```
 keytool -genkeypair -v -keystore curio.keystore -alias curio -keyalg RSA -keysize 4096 -validity 36500

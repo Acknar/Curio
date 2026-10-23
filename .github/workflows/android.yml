@@ -40,35 +40,62 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      # Without release secrets the APK is signed with a debug key. Caching that key
-      # keeps the signature stable between runs, so a new APK installs over the old one.
-      - name: Restore debug signing key
+      # Without release secrets the APK is signed with a CI key kept in the Actions
+      # cache, so its signature stays the same between runs and a new APK installs
+      # over the old one. Add the CURIO_KEYSTORE_* secrets for a permanent key.
+      - name: Restore CI signing key
         uses: actions/cache@v4
         with:
-          path: ~/.android/debug.keystore
-          key: curio-debug-keystore-v1
+          path: .ci/curio-ci.keystore
+          key: curio-ci-keystore-v1
 
-      - name: Prepare release signing key
+      - name: Prepare signing key
         env:
           KEYSTORE_BASE64: ${{ secrets.CURIO_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.CURIO_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.CURIO_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.CURIO_KEY_PASSWORD }}
         run: |
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/curio.keystore"
-            echo "CURIO_KEYSTORE_FILE=$RUNNER_TEMP/curio.keystore" >> "$GITHUB_ENV"
-            echo "Release key found."
+            {
+              echo "CURIO_KEYSTORE_FILE=$RUNNER_TEMP/curio.keystore"
+              echo "CURIO_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+              echo "CURIO_KEY_ALIAS=$KEY_ALIAS"
+              echo "CURIO_KEY_PASSWORD=$KEY_PASSWORD"
+            } >> "$GITHUB_ENV"
+            echo "Signing with the release key from secrets."
           else
-            echo "No CURIO_KEYSTORE_BASE64 secret: signing with the cached debug key."
+            mkdir -p .ci
+            if [ ! -f .ci/curio-ci.keystore ]; then
+              keytool -genkeypair -keystore .ci/curio-ci.keystore -storepass curio-ci -keypass curio-ci \
+                -alias curio -keyalg RSA -keysize 2048 -validity 36500 -dname "CN=Curio CI"
+              echo "Created a new CI signing key."
+            fi
+            {
+              echo "CURIO_KEYSTORE_FILE=$GITHUB_WORKSPACE/.ci/curio-ci.keystore"
+              echo "CURIO_KEYSTORE_PASSWORD=curio-ci"
+              echo "CURIO_KEY_ALIAS=curio"
+              echo "CURIO_KEY_PASSWORD=curio-ci"
+            } >> "$GITHUB_ENV"
+            echo "Signing with the cached CI key."
           fi
 
       - name: Build APK
         working-directory: android
-        env:
-          CURIO_KEYSTORE_PASSWORD: ${{ secrets.CURIO_KEYSTORE_PASSWORD }}
-          CURIO_KEY_ALIAS: ${{ secrets.CURIO_KEY_ALIAS }}
-          CURIO_KEY_PASSWORD: ${{ secrets.CURIO_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon assembleRelease
+
+      - name: Check the APK contents
+        working-directory: android/app/build/outputs/apk/release
+        run: |
+          apk=$(ls *.apk)
+          unzip -l "$apk" | grep -E "assets/(curio|ui)/" | awk '{print $4}'
+          for f in assets/curio/styles.css assets/curio/l10n/fr.json assets/ui/clip.html assets/ui/inject/curio-page.js; do
+            unzip -l "$apk" | grep -q " $f$" || { echo "Missing $f"; exit 1; }
+          done
+          keytool -printcert -jarfile "$apk" | grep -E "Owner|SHA256:" | head -2
 
       - uses: actions/upload-artifact@v4
         with:
