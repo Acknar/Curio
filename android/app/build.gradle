@@ -1,0 +1,51 @@
+plugins {
+	id 'com.android.application'
+}
+
+// Release signing comes from environment variables (set as GitHub secrets in CI).
+// Without them the build falls back to the debug key, so local and CI builds
+// always produce an installable APK.
+def ksFile = System.getenv('CURIO_KEYSTORE_FILE')
+def hasReleaseKey = ksFile != null && new File(ksFile).exists()
+
+android {
+	namespace 'com.acknar.curio'
+	compileSdk 35
+
+	defaultConfig {
+		applicationId 'com.acknar.curio'
+		minSdk 26
+		targetSdk 35
+		versionCode 1
+		versionName '1.0.0'
+	}
+
+	signingConfigs {
+		if (hasReleaseKey) {
+			release {
+				storeFile file(ksFile)
+				storePassword System.getenv('CURIO_KEYSTORE_PASSWORD')
+				keyAlias System.getenv('CURIO_KEY_ALIAS')
+				keyPassword System.getenv('CURIO_KEY_PASSWORD')
+			}
+		}
+	}
+
+	buildTypes {
+		release {
+			minifyEnabled false
+			signingConfig hasReleaseKey ? signingConfigs.release : signingConfigs.debug
+		}
+	}
+
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_17
+		targetCompatibility JavaVersion.VERSION_17
+	}
+
+	applicationVariants.all { variant ->
+		variant.outputs.all {
+			outputFileName = "curio-android-${variant.versionName}-${variant.buildType.name}.apk"
+		}
+	}
+}

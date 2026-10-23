@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<style name="Theme.Curio" parent="android:Theme.Material.NoActionBar">
+		<item name="android:colorPrimary">@color/curio_blue</item>
+		<item name="android:colorAccent">@color/curio_blue</item>
+		<item name="android:windowBackground">@color/bg</item>
+		<item name="android:statusBarColor">@color/bg</item>
+		<item name="android:navigationBarColor">@color/bg</item>
+		<item name="android:windowLightStatusBar">false</item>
+	</style>
+
+	<style name="Theme.Curio.Share">
+		<item name="android:windowIsTranslucent">true</item>
+		<item name="android:windowBackground">@color/scrim</item>
+		<item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
+	</style>
+</resources>
