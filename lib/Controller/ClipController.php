@@ -64,7 +64,7 @@ class ClipController extends Controller {
 		return $this->run(fn () => [
 			'ok' => true,
 			'app' => Application::APP_ID,
-			'version' => '2.1.0',
+			'version' => '2.1.1',
 			'user' => $this->service->uid(),
 		]);
 	}

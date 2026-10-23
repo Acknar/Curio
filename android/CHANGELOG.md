@@ -3,6 +3,12 @@
 All notable changes to Curio for Android are documented here. The project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.2.1 - 2026-10-23
+
+### Changed
+
+- Introduction: swipe left or right to move between screens. New first screen explaining what Curio does. The site sign-ins screen, and the same section in App settings, now state that nothing is posted or shared to those sites and that only the shared post is read.
+
 ## 1.2.0 - 2026-10-23
 
 ### Added

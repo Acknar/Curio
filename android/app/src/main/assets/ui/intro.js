@@ -24,7 +24,8 @@ function show(i) {
 	steps.forEach((s, k) => s.classList.toggle('hidden', k !== step));
 	const cur = steps[step];
 	$('iTitle').textContent = tr(cur.getAttribute('data-title'));
-	$('iArt').innerHTML = Look.icon(cur.getAttribute('data-art'), 30);
+	const art = cur.getAttribute('data-art');
+	$('iArt').innerHTML = art === 'logo' ? Look.logo(30) : Look.icon(art, 30);
 	[...$('iDots').children].forEach((d, k) => d.classList.toggle('on', k === step));
 	$('btnPrev').classList.toggle('hidden', step === 0);
 	$('btnNext').classList.toggle('hidden', step === steps.length - 1);
@@ -97,6 +98,20 @@ renderPlatforms();
 renderSites($('iSites'));
 renderBoards();
 show(0);
+
+// Swipe left or right to change step; mostly-vertical moves are scrolling.
+let touch = null;
+$('root').addEventListener('touchstart', (e) => { const t = e.touches[0]; touch = t ? { x: t.clientX, y: t.clientY } : null; }, { passive: true });
+$('root').addEventListener('touchend', (e) => {
+	const t = e.changedTouches[0];
+	const start = touch;
+	touch = null;
+	if (!start || !t || e.target.closest('select')) return;
+	const dx = t.clientX - start.x;
+	const dy = t.clientY - start.y;
+	if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+	show(dx < 0 ? step + 1 : step - 1);
+});
 
 $('btnPrev').addEventListener('click', () => show(step - 1));
 $('btnNext').addEventListener('click', () => show(step + 1));

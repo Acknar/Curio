@@ -4,6 +4,13 @@ All notable changes to Curio are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.1.1 - 2026-10-23
+
+### Changed
+
+- First-run tour: swipe left or right to move between steps on touch screens. The last install step now says to sign in with your Nextcloud server address instead of showing the address.
+- App Store description: shorter opening paragraph.
+
 ## 2.1.0 - 2026-10-23
 
 ### Added

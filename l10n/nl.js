@@ -258,7 +258,6 @@ OC.L10N.register(
     "Next": "Volgende",
     "No subfolders here.": "Geen submappen hier.",
     "On your Android phone, download the app: scan the code or tap Download the app.": "Download de app op je Android-telefoon: scan de code of tik op App downloaden.",
-    "Open Curio and sign in with this address:": "Open Curio en log in met dit adres:",
     "Open the downloaded file, from the notification or the Files app.": "Open het gedownloade bestand via de melding of de Bestanden-app.",
     "Optional. The map uses OpenFreeMap, which needs no key. To use CARTO maps instead, paste a free key from carto.com/basemaps/apikey. It applies to everyone on this Nextcloud.": "Optioneel. De kaart gebruikt OpenFreeMap, dat geen sleutel nodig heeft. Wil je in plaats daarvan CARTO-kaarten, plak dan een gratis sleutel van carto.com/basemaps/apikey. Die geldt voor iedereen op deze Nextcloud.",
     "Organize and browse": "Ordenen en bladeren",
@@ -284,6 +283,7 @@ OC.L10N.register(
     "Write notes for the ideas that do not have a link yet.": "Schrijf notities voor ideeën die nog geen link hebben.",
     "You can replay this tour from Settings.": "Je kunt deze rondleiding opnieuw bekijken via Instellingen.",
     "Your Curio folder could not be found. Create a new one or pick an existing folder to continue.": "Je Curio-map is niet gevonden. Maak een nieuwe aan of kies een bestaande map om verder te gaan.",
-    "or": "of"
+    "or": "of",
+    "Open Curio and sign in with your Nextcloud server address.": "Open Curio en log in met het adres van je Nextcloud-server."
 },
     "nplurals=2; plural=(n != 1);");

@@ -38,7 +38,7 @@ const visible = (doc) => [...doc.querySelectorAll('section[data-step]')].filter(
 test('introduction: steps, site sign-ins, default board, done flag', async () => {
 	const { w, doc, rec } = await openIntro();
 	assert.deepEqual(visible(doc), ['welcome']);
-	assert.equal(doc.getElementById('iTitle').textContent, 'Welcome to Curio for Android');
+	assert.equal(doc.getElementById('iTitle').textContent, 'Welcome to Curio');
 	assert.ok(doc.getElementById('btnPrev').classList.contains('hidden'));
 	assert.equal(doc.querySelectorAll('#iDots button').length, 5);
 
@@ -80,7 +80,27 @@ test('introduction: steps, site sign-ins, default board, done flag', async () =>
 
 test('introduction follows Curio\'s language', async () => {
 	const { doc } = await openIntro({ theme: 'dark', lang: 'de' });
-	assert.equal(doc.getElementById('iTitle').textContent, 'Willkommen bei Curio für Android');
+	assert.equal(doc.getElementById('iTitle').textContent, 'Willkommen bei Curio');
 	assert.equal(doc.getElementById('btnNext').textContent, 'Weiter');
 	assert.equal(doc.getElementById('root').getAttribute('data-rbtheme'), 'dark');
+});
+
+test('introduction: swiping changes step, vertical moves do not', async () => {
+	const { w, doc } = await openIntro();
+	const swipe = (x0, y0, x1, y1) => {
+		const s = new w.Event('touchstart', { bubbles: true });
+		s.touches = [{ clientX: x0, clientY: y0 }];
+		doc.querySelector('.tour-body').dispatchEvent(s);
+		const e = new w.Event('touchend', { bubbles: true });
+		e.changedTouches = [{ clientX: x1, clientY: y1 }];
+		doc.querySelector('.tour-body').dispatchEvent(e);
+	};
+	swipe(300, 400, 120, 410);
+	assert.deepEqual(visible(doc), ['share'], 'swipe left: next');
+	swipe(300, 400, 280, 150);
+	assert.deepEqual(visible(doc), ['share'], 'scrolling is not a swipe');
+	swipe(100, 400, 320, 390);
+	assert.deepEqual(visible(doc), ['welcome'], 'swipe right: back');
+	swipe(100, 400, 320, 390);
+	assert.deepEqual(visible(doc), ['welcome'], 'stays on the first step');
 });

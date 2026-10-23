@@ -258,7 +258,6 @@ OC.L10N.register(
     "Next": "Weiter",
     "No subfolders here.": "Hier gibt es keine Unterordner.",
     "On your Android phone, download the app: scan the code or tap Download the app.": "Laden Sie die App auf Ihrem Android-Handy herunter: Scannen Sie den Code oder tippen Sie auf App herunterladen.",
-    "Open Curio and sign in with this address:": "Öffnen Sie Curio und melden Sie sich mit dieser Adresse an:",
     "Open the downloaded file, from the notification or the Files app.": "Öffnen Sie die heruntergeladene Datei über die Benachrichtigung oder die Dateien-App.",
     "Optional. The map uses OpenFreeMap, which needs no key. To use CARTO maps instead, paste a free key from carto.com/basemaps/apikey. It applies to everyone on this Nextcloud.": "Optional. Die Karte verwendet OpenFreeMap, das keinen Schlüssel benötigt. Um stattdessen CARTO-Karten zu verwenden, fügen Sie einen kostenlosen Schlüssel von carto.com/basemaps/apikey ein. Er gilt für alle auf dieser Nextcloud.",
     "Organize and browse": "Ordnen und durchsuchen",
@@ -284,6 +283,7 @@ OC.L10N.register(
     "Write notes for the ideas that do not have a link yet.": "Schreiben Sie Notizen für Ideen, die noch keinen Link haben.",
     "You can replay this tour from Settings.": "Sie können diese Tour in den Einstellungen erneut ansehen.",
     "Your Curio folder could not be found. Create a new one or pick an existing folder to continue.": "Ihr Curio-Ordner wurde nicht gefunden. Erstellen Sie einen neuen oder wählen Sie einen vorhandenen Ordner, um fortzufahren.",
-    "or": "oder"
+    "or": "oder",
+    "Open Curio and sign in with your Nextcloud server address.": "Öffnen Sie Curio und melden Sie sich mit der Adresse Ihres Nextcloud-Servers an."
 },
     "nplurals=2; plural=(n != 1);");

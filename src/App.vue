@@ -609,7 +609,7 @@
 
 		<!-- First-run tour (once per user; replay from Settings) -->
 		<div v-if="tourOpen" class="scrim show tour-scrim">
-			<div class="modal show tour">
+			<div class="modal show tour" @touchstart.passive="tourTouchStart" @touchend="tourTouchEnd">
 				<div class="mhead"><h2>{{ tourSteps[tourStep].title }}</h2><button class="close" :title="tr('Skip the tour')" @click="finishTour" v-html="icon('x', 18)" /></div>
 				<div class="mbody tour-body">
 					<div class="tour-art" v-html="icon(tourSteps[tourStep].icon, 30)" />
@@ -650,7 +650,7 @@
 								<li>{{ tr('Open the downloaded file, from the notification or the Files app.') }}</li>
 								<li>{{ tr('If Android says your browser or Files app is not allowed to install apps, tap Settings, turn on "Allow from this source", then go back.') }}</li>
 								<li>{{ tr('Tap Install. If Play Protect warns about an unknown app, tap "More details", then "Install anyway".') }}</li>
-								<li>{{ tr('Open Curio and sign in with this address:') }} <code>{{ serverAddress }}</code></li>
+								<li>{{ tr('Open Curio and sign in with your Nextcloud server address.') }}</li>
 							</ol>
 							<div class="hint">{{ tr('Curio for Android is free and open source. It is not on the Play Store, which is why Android asks for this permission once.') }}</div>
 						</details>
@@ -810,10 +810,6 @@ export default {
 			qr.addData(APP_APK_URL)
 			qr.make()
 			return qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })
-		},
-		serverAddress() {
-			const root = (window.OC && typeof OC.webroot === 'string') ? OC.webroot : (window._oc_webroot || '')
-			return window.location.origin + root
 		},
 		theme() { const t = this.settings.theme; return (t === 'dark' || (t === 'system' && this.prefersDark)) ? 'dark' : 'light' },
 		dateLocale() {
@@ -997,6 +993,22 @@ export default {
 			this.settingsOpen = false
 			this.tourStep = Math.max(0, Math.min(step || 0, this.tourSteps.length - 1))
 			this.tourOpen = true
+		},
+		tourTouchStart(e) {
+			const t = e.touches[0]
+			this._tourTouch = t ? { x: t.clientX, y: t.clientY } : null
+		},
+		// Swipe left or right to change step; mostly-vertical moves are scrolling.
+		tourTouchEnd(e) {
+			const start = this._tourTouch
+			const t = e.changedTouches[0]
+			this._tourTouch = null
+			if (!start || !t) return
+			const dx = t.clientX - start.x
+			const dy = t.clientY - start.y
+			if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return
+			if (dx < 0 && this.tourStep < this.tourSteps.length - 1) this.tourStep++
+			else if (dx > 0 && this.tourStep > 0) this.tourStep--
 		},
 		async finishTour() {
 			this.tourOpen = false

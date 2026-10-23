@@ -257,7 +257,6 @@
         "Next": "Suivant",
         "No subfolders here.": "Aucun sous-dossier ici.",
         "On your Android phone, download the app: scan the code or tap Download the app.": "Sur votre téléphone Android, téléchargez l'application : scannez le code ou touchez Télécharger l'application.",
-        "Open Curio and sign in with this address:": "Ouvrez Curio et connectez-vous avec cette adresse :",
         "Open the downloaded file, from the notification or the Files app.": "Ouvrez le fichier téléchargé, depuis la notification ou l'application Fichiers.",
         "Optional. The map uses OpenFreeMap, which needs no key. To use CARTO maps instead, paste a free key from carto.com/basemaps/apikey. It applies to everyone on this Nextcloud.": "Facultatif. La carte utilise OpenFreeMap, qui ne nécessite aucune clé. Pour utiliser les cartes CARTO à la place, collez une clé gratuite obtenue sur carto.com/basemaps/apikey. Elle s'applique à tout le monde sur ce Nextcloud.",
         "Organize and browse": "Organiser et parcourir",
@@ -283,7 +282,8 @@
         "Write notes for the ideas that do not have a link yet.": "Écrivez des notes pour les idées qui n'ont pas encore de lien.",
         "You can replay this tour from Settings.": "Vous pouvez revoir cette visite depuis les Paramètres.",
         "Your Curio folder could not be found. Create a new one or pick an existing folder to continue.": "Votre dossier Curio est introuvable. Créez-en un nouveau ou choisissez un dossier existant pour continuer.",
-        "or": "ou"
+        "or": "ou",
+        "Open Curio and sign in with your Nextcloud server address.": "Ouvrez Curio et connectez-vous avec l'adresse de votre serveur Nextcloud."
     },
     "pluralForm": "nplurals=2; plural=(n > 1);"
 }
