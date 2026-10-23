@@ -32,6 +32,8 @@ Plan once the user uploads 3 to 5 screenshots:
 
 Suggested shots: a board in vertical masonry layout with tags shown; the map layout with the CARTO key set (no watermark); the Add reference dialog with a fetched Instagram or Pinterest post; the detail view of a reference; optionally the Android share dialog. Nothing personal should be visible: the images are public.
 
+Also ships with 2.0.1: the new App Store description (user's text, in `appinfo/info.xml` `<description>`, laid out in Markdown) and a README link to https://apps.nextcloud.com/apps/curio.
+
 ### 2. Nextcloud 35 compatibility (done, ships with the next release)
 
 `appinfo/info.xml` now says `<nextcloud min-version="31" max-version="35"/>`, recorded under `## Unreleased` in `CHANGELOG.md`. The version was not bumped, so no release was made; 2.0.1 carries it.

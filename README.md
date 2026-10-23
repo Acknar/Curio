@@ -1,5 +1,7 @@
 # Curio
 
+[Curio on the Nextcloud App Store](https://apps.nextcloud.com/apps/curio)
+
 A Nextcloud app for curating images, links, videos, PDFs and text notes into
 visual boards, right inside Nextcloud.
 
@@ -31,7 +33,8 @@ occ config:app:set curio carto_api_key --value=YOUR_KEY
 
 ## Install
 
-Install from the Nextcloud App Store, or place this folder at
+Install from the [Nextcloud App Store](https://apps.nextcloud.com/apps/curio)
+(Apps > Multimedia or Organization > Curio in your Nextcloud), or place this folder at
 `custom_apps/curio` (or `apps/curio`) and enable it:
 
 ```

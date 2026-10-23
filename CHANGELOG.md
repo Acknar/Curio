@@ -8,6 +8,7 @@ All notable changes to Curio are documented here. The format is based on
 
 ### Changed
 
+- New App Store description.
 - Supports Nextcloud 35 (supported range now 31 to 35). Checked against the Nextcloud 35 critical changes (PHP 8.3 minimum, database wrapper, Symfony Console 7, removed front-end globals and back-end APIs); Curio uses none of the removed APIs, so only the supported range changed.
 
 ## 2.0.0 - 2026-10-23
