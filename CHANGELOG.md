@@ -8,7 +8,8 @@ All notable changes to Curio are documented here. The format is based on
 
 ### Changed
 
-- Tour, last install step: shows the address of the user's own Nextcloud again, under "Open Curio and sign in with your Nextcloud server address:". It is read from the page, so every user sees their own server.
+- Tour, last install step: shows the address of the user's own Nextcloud again, under "Open Curio and sign in with your Nextcloud server address:". It is read from the page, so every user sees their own server. A Copy button puts it on the clipboard, and a long press selects the whole address.
+- Sidebar swipes follow the finger: the panel slides out as you swipe right from the left edge (or anywhere on the grid and vertical layouts) and slides back as you swipe left, then settles open or closed when you let go. The swipe is recognised while the finger moves, so it works even when the phone also starts scrolling.
 
 ## 2.1.1 - 2026-10-23
 

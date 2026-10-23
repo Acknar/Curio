@@ -288,6 +288,8 @@ OC.L10N.register(
     "No bookmarks found in this file.": "In dieser Datei wurden keine Lesezeichen gefunden.",
     "Upload photos and PDFs from your phone, or share them to Curio from any app.": "Laden Sie Fotos und PDFs von Ihrem Handy hoch oder teilen Sie sie aus jeder App mit Curio.",
     "Upload photos and PDFs from your phone.": "Laden Sie Fotos und PDFs von Ihrem Handy hoch.",
-    "Open Curio and sign in with your Nextcloud server address:": "Öffnen Sie Curio und melden Sie sich mit der Adresse Ihres Nextcloud-Servers an:"
+    "Open Curio and sign in with your Nextcloud server address:": "Öffnen Sie Curio und melden Sie sich mit der Adresse Ihres Nextcloud-Servers an:",
+    "Copy": "Kopieren",
+    "Copied": "Kopiert"
 },
     "nplurals=2; plural=(n != 1);");

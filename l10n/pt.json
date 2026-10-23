@@ -287,7 +287,9 @@
         "No bookmarks found in this file.": "Não foram encontrados marcadores neste ficheiro.",
         "Upload photos and PDFs from your phone, or share them to Curio from any app.": "Carregue fotos e PDF a partir do telemóvel, ou partilhe-os com o Curio a partir de qualquer aplicação.",
         "Upload photos and PDFs from your phone.": "Carregue fotos e PDF a partir do telemóvel.",
-        "Open Curio and sign in with your Nextcloud server address:": "Abra o Curio e inicie sessão com o endereço do seu servidor Nextcloud:"
+        "Open Curio and sign in with your Nextcloud server address:": "Abra o Curio e inicie sessão com o endereço do seu servidor Nextcloud:",
+        "Copy": "Copiar",
+        "Copied": "Copiado"
     },
     "pluralForm": "nplurals=2; plural=(n != 1);"
 }

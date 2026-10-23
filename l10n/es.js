@@ -288,6 +288,8 @@ OC.L10N.register(
     "No bookmarks found in this file.": "No se encontraron marcadores en este archivo.",
     "Upload photos and PDFs from your phone, or share them to Curio from any app.": "Sube fotos y PDF desde tu móvil, o compártelos con Curio desde cualquier app.",
     "Upload photos and PDFs from your phone.": "Sube fotos y PDF desde tu móvil.",
-    "Open Curio and sign in with your Nextcloud server address:": "Abre Curio e inicia sesión con la dirección de tu servidor Nextcloud:"
+    "Open Curio and sign in with your Nextcloud server address:": "Abre Curio e inicia sesión con la dirección de tu servidor Nextcloud:",
+    "Copy": "Copiar",
+    "Copied": "Copiado"
 },
     "nplurals=2; plural=(n != 1);");

@@ -287,7 +287,9 @@
         "No bookmarks found in this file.": "Geen bladwijzers gevonden in dit bestand.",
         "Upload photos and PDFs from your phone, or share them to Curio from any app.": "Upload foto's en pdf's vanaf je telefoon, of deel ze vanuit elke app met Curio.",
         "Upload photos and PDFs from your phone.": "Upload foto's en pdf's vanaf je telefoon.",
-        "Open Curio and sign in with your Nextcloud server address:": "Open Curio en log in met het adres van je Nextcloud-server:"
+        "Open Curio and sign in with your Nextcloud server address:": "Open Curio en log in met het adres van je Nextcloud-server:",
+        "Copy": "Kopiëren",
+        "Copied": "Gekopieerd"
     },
     "pluralForm": "nplurals=2; plural=(n != 1);"
 }

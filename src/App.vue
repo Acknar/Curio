@@ -1,5 +1,5 @@
 <template>
-	<div class="curio" :class="{ 'nav-hidden': !navOpen }" :data-rbtheme="theme" @touchstart.passive="navTouchStart" @touchend="navTouchEnd">
+	<div class="curio" :class="{ 'nav-hidden': !navOpen }" :data-rbtheme="theme" @touchstart.passive="navTouchStart" @touchmove="navTouchMove" @touchend="navTouchEnd" @touchcancel="navTouchEnd">
 		<!-- First-run folder setup: shown until the user creates or picks a base folder -->
 		<div v-if="needsSetup" class="scrim show setup-scrim">
 			<div class="modal show" style="width:min(500px,94vw)">
@@ -39,7 +39,7 @@
 		<div v-if="navOpen && isMobile" class="side-backdrop" @click="navOpen = false" />
 		<button class="side-handle" :title="tr('Toggle sidebar')" @click="navOpen = !navOpen" v-html="icon('chevron', 18)" />
 
-		<aside class="sidebar">
+		<aside ref="sidebar" class="sidebar">
 			<div class="side-fixed">
 				<div class="side-top">
 					<div class="searchwrap" :class="{ has: !!search }">
@@ -651,7 +651,10 @@
 								<li>{{ tr('Open the downloaded file, from the notification or the Files app.') }}</li>
 								<li>{{ tr('If Android says your browser or Files app is not allowed to install apps, tap Settings, turn on "Allow from this source", then go back.') }}</li>
 								<li>{{ tr('Tap Install. If Play Protect warns about an unknown app, tap "More details", then "Install anyway".') }}</li>
-								<li>{{ tr('Open Curio and sign in with your Nextcloud server address:') }} <code>{{ serverAddress }}</code></li>
+								<li>
+									{{ tr('Open Curio and sign in with your Nextcloud server address:') }}
+									<span class="tour-addr"><code>{{ serverAddress }}</code><button class="btn tour-copy" @click="copyServerAddress"><span v-html="icon(addrCopied ? 'check' : 'copy', 14)" />{{ addrCopied ? tr('Copied') : tr('Copy') }}</button></span>
+								</li>
 							</ol>
 							<div class="hint">{{ tr('Curio for Android is free and open source. It is not on the Play Store, which is why Android asks for this permission once.') }}</div>
 						</details>
@@ -784,7 +787,7 @@ export default {
 			manageTagsOpen: false, manageBoardsOpen: false, settingsOpen: false, deleteConfirm: null, deletingBoard: false,
 			dataBoardId: null, dataMsg: '', dataBusy: false,
 			mapKey: '', mapCanEdit: false, mapKeyInput: '', mapKeyBusy: false, mapKeyMsg: '', mapLoadError: false,
-			tourOpen: false, tourStep: 0, onboardingDone: true,
+			tourOpen: false, tourStep: 0, onboardingDone: true, addrCopied: false,
 			appApkUrl: APP_APK_URL, appReleasesUrl: APP_RELEASES_URL,
 			inAndroidApp: typeof window.CurioAndroid !== 'undefined',
 			isAndroid: /Android/i.test(navigator.userAgent || ''),
@@ -1013,28 +1016,84 @@ export default {
 			this.tourStep = Math.max(0, Math.min(step || 0, this.tourSteps.length - 1))
 			this.tourOpen = true
 		},
-		// Swipe right to pull out the sidebar, left to put it away. Opening works from the
-		// left edge, or from anywhere on a vertically scrolling board; the horizontal
-		// layout and the map keep horizontal swipes for themselves. Dialogs are ignored.
+		// Swipe right to pull out the sidebar, left to put it away; the panel follows the
+		// finger and settles open or closed on release. Opening works from the left edge,
+		// or from anywhere on a vertically scrolling board; the horizontal layout and the
+		// map keep horizontal swipes for themselves. Dialogs are ignored.
 		navTouchStart(e) {
 			const t = e.touches[0]
 			const el = e.target && e.target.closest ? e.target : null
 			const blocked = !t || e.touches.length > 1 || (el && el.closest('.scrim, .modal, input, textarea, select, .leaflet-container'))
-			this._navTouch = blocked ? null : { x: t.clientX, y: t.clientY, inBoard: !!(el && el.closest('.main')), inSide: !!(el && el.closest('.sidebar')) }
+			this._navTouch = blocked ? null : { x: t.clientX, y: t.clientY, mode: null, dx: 0, inBoard: !!(el && el.closest('.main')), inSide: !!(el && el.closest('.sidebar')) }
+		},
+		navTouchMove(e) {
+			const g = this._navTouch
+			const t = e.touches[0]
+			if (!g || !t || g.mode === 'none') return
+			const dx = t.clientX - g.x
+			const dy = t.clientY - g.y
+			if (!g.mode) {
+				if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return
+				if (Math.abs(dx) < Math.abs(dy) * 1.2) { g.mode = 'none'; return }
+				const anywhere = g.inBoard && (this.settings.layout === 'square' || this.settings.layout === 'masonry')
+				if (!this.navOpen && dx > 0 && (g.x <= 48 || anywhere)) g.mode = 'open'
+				else if (this.navOpen && dx < 0 && (this.isMobile || g.inSide)) g.mode = 'close'
+				else { g.mode = 'none'; return }
+				g.width = this.$refs.sidebar ? this.$refs.sidebar.offsetWidth : 300
+			}
+			g.dx = dx
+			if (e.cancelable) e.preventDefault()
+			const w = g.width
+			const offset = Math.max(-w, Math.min(0, g.mode === 'open' ? dx - w : dx))
+			this.dragSidebar(offset)
 		},
 		navTouchEnd(e) {
-			const start = this._navTouch
-			const t = e.changedTouches[0]
+			const g = this._navTouch
 			this._navTouch = null
-			if (!start || !t) return
-			const dx = t.clientX - start.x
-			const dy = t.clientY - start.y
-			if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return
-			if (dx < 0 && this.navOpen && (this.isMobile || start.inSide)) {
-				this.navOpen = false
-			} else if (dx > 0 && !this.navOpen) {
-				const anywhere = start.inBoard && (this.settings.layout === 'square' || this.settings.layout === 'masonry')
-				if (start.x <= 48 || anywhere) this.navOpen = true
+			if (!g || !g.mode || g.mode === 'none') return
+			this.dragSidebar(null)
+			const far = Math.abs(g.dx) > Math.min(g.width * 0.3, 110)
+			if (e.type === 'touchcancel' || !far) return
+			this.navOpen = g.mode === 'open'
+		},
+		// Place the sidebar at `offset` px (-width = hidden, 0 = open) while dragging; null
+		// hands it back to the stylesheet, which animates it to its open or closed place.
+		dragSidebar(offset) {
+			const el = this.$refs.sidebar
+			if (!el) return
+			this.$el.classList.toggle('nav-dragging', offset !== null)
+			if (offset === null) {
+				el.style.transition = ''
+				el.style.transform = ''
+				el.style.marginLeft = ''
+				return
+			}
+			el.style.transition = 'none'
+			if (this.isMobile) el.style.transform = 'translateX(' + offset + 'px)'
+			else el.style.marginLeft = offset + 'px'
+		},
+		async copyServerAddress() {
+			const text = this.serverAddress
+			let ok = false
+			try {
+				if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); ok = true }
+			} catch (e) { /* fall back below */ }
+			if (!ok) {
+				// Older or non-HTTPS pages: copy through a selected, off-screen field.
+				const ta = document.createElement('textarea')
+				ta.value = text
+				ta.setAttribute('readonly', '')
+				ta.style.cssText = 'position:fixed;top:0;left:-9999px;opacity:0'
+				document.body.appendChild(ta)
+				ta.select()
+				ta.setSelectionRange(0, text.length)
+				try { ok = document.execCommand('copy') } catch (e) { ok = false }
+				document.body.removeChild(ta)
+			}
+			if (ok) {
+				this.addrCopied = true
+				clearTimeout(this._addrCopiedTimer)
+				this._addrCopiedTimer = setTimeout(() => { this.addrCopied = false }, 2000)
 			}
 		},
 		tourTouchStart(e) {
