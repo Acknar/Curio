@@ -610,6 +610,7 @@
 .curio .tour-install { background: var(--surface-2); border-radius: 10px; padding: 10px 14px; font-size: 13.5px; }
 .curio .tour-install summary { cursor: pointer; font-weight: 600; }
 .curio .tour-install ol { margin: 10px 0 8px; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; line-height: 1.5; }
+.curio .tour-install code { display: block; width: max-content; max-width: 100%; margin-top: 4px; background: var(--surface); padding: 3px 8px; border-radius: 6px; overflow-wrap: anywhere; }
 .curio .tour-replay { margin: 14px 0 0; }
 .curio .tour-foot { align-items: center; }
 .curio .tour-dots { flex: 1; display: flex; gap: 6px; }

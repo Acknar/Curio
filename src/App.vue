@@ -651,7 +651,7 @@
 								<li>{{ tr('Open the downloaded file, from the notification or the Files app.') }}</li>
 								<li>{{ tr('If Android says your browser or Files app is not allowed to install apps, tap Settings, turn on "Allow from this source", then go back.') }}</li>
 								<li>{{ tr('Tap Install. If Play Protect warns about an unknown app, tap "More details", then "Install anyway".') }}</li>
-								<li>{{ tr('Open Curio and sign in with your Nextcloud server address.') }}</li>
+								<li>{{ tr('Open Curio and sign in with your Nextcloud server address:') }} <code>{{ serverAddress }}</code></li>
 							</ol>
 							<div class="hint">{{ tr('Curio for Android is free and open source. It is not on the Play Store, which is why Android asks for this permission once.') }}</div>
 						</details>
@@ -815,6 +815,11 @@ export default {
 			if (this.inAndroidApp || this.isAndroid) return true
 			if (typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '')) return true
 			return typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches && !matchMedia('(pointer: fine)').matches
+		},
+		// The address of the Nextcloud this page is served from, so each user sees their own.
+		serverAddress() {
+			const root = (window.OC && typeof OC.webroot === 'string') ? OC.webroot : (window._oc_webroot || '')
+			return window.location.origin + root
 		},
 		tourWelcomeImg() {
 			return generateFilePath('curio', 'img', 'tour-welcome.webp')

@@ -272,7 +272,6 @@
         "You can replay this tour from Settings.": "Sie können diese Tour in den Einstellungen erneut ansehen.",
         "Your Curio folder could not be found. Create a new one or pick an existing folder to continue.": "Ihr Curio-Ordner wurde nicht gefunden. Erstellen Sie einen neuen oder wählen Sie einen vorhandenen Ordner, um fortzufahren.",
         "or": "oder",
-        "Open Curio and sign in with your Nextcloud server address.": "Öffnen Sie Curio und melden Sie sich mit der Adresse Ihres Nextcloud-Servers an.",
         "Every reference is a real file in your Nextcloud, so your collection stays yours.": "Jede Referenz ist eine echte Datei in Ihrer Nextcloud, Ihre Sammlung bleibt also Ihre.",
         "Take the tour": "Tour starten",
         "Organize and share": "Ordnen und teilen",
@@ -287,7 +286,8 @@
         "Importing {done} of {total}...": "Importiere {done} von {total}...",
         "No bookmarks found in this file.": "In dieser Datei wurden keine Lesezeichen gefunden.",
         "Upload photos and PDFs from your phone, or share them to Curio from any app.": "Laden Sie Fotos und PDFs von Ihrem Handy hoch oder teilen Sie sie aus jeder App mit Curio.",
-        "Upload photos and PDFs from your phone.": "Laden Sie Fotos und PDFs von Ihrem Handy hoch."
+        "Upload photos and PDFs from your phone.": "Laden Sie Fotos und PDFs von Ihrem Handy hoch.",
+        "Open Curio and sign in with your Nextcloud server address:": "Öffnen Sie Curio und melden Sie sich mit der Adresse Ihres Nextcloud-Servers an:"
     },
     "pluralForm": "nplurals=2; plural=(n != 1);"
 }

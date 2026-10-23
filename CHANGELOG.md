@@ -4,6 +4,12 @@ All notable changes to Curio are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased (next version: 2.1.2)
+
+### Changed
+
+- Tour, last install step: shows the address of the user's own Nextcloud again, under "Open Curio and sign in with your Nextcloud server address:". It is read from the page, so every user sees their own server.
+
 ## 2.1.1 - 2026-10-23
 
 ### Added

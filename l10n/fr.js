@@ -273,7 +273,6 @@ OC.L10N.register(
     "You can replay this tour from Settings.": "Vous pouvez revoir cette visite depuis les Paramètres.",
     "Your Curio folder could not be found. Create a new one or pick an existing folder to continue.": "Votre dossier Curio est introuvable. Créez-en un nouveau ou choisissez un dossier existant pour continuer.",
     "or": "ou",
-    "Open Curio and sign in with your Nextcloud server address.": "Ouvrez Curio et connectez-vous avec l'adresse de votre serveur Nextcloud.",
     "Every reference is a real file in your Nextcloud, so your collection stays yours.": "Chaque référence est un vrai fichier dans votre Nextcloud : votre collection reste la vôtre.",
     "Take the tour": "Faire la visite",
     "Organize and share": "Organiser et partager",
@@ -288,6 +287,7 @@ OC.L10N.register(
     "Importing {done} of {total}...": "Import de {done} sur {total}...",
     "No bookmarks found in this file.": "Aucun favori trouvé dans ce fichier.",
     "Upload photos and PDFs from your phone, or share them to Curio from any app.": "Importez des photos et des PDF depuis votre téléphone, ou partagez-les vers Curio depuis n'importe quelle app.",
-    "Upload photos and PDFs from your phone.": "Importez des photos et des PDF depuis votre téléphone."
+    "Upload photos and PDFs from your phone.": "Importez des photos et des PDF depuis votre téléphone.",
+    "Open Curio and sign in with your Nextcloud server address:": "Ouvrez Curio et connectez-vous avec l'adresse de votre serveur Nextcloud :"
 },
     "nplurals=2; plural=(n > 1);");

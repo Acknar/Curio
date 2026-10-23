@@ -273,7 +273,6 @@ OC.L10N.register(
     "You can replay this tour from Settings.": "Je kunt deze rondleiding opnieuw bekijken via Instellingen.",
     "Your Curio folder could not be found. Create a new one or pick an existing folder to continue.": "Je Curio-map is niet gevonden. Maak een nieuwe aan of kies een bestaande map om verder te gaan.",
     "or": "of",
-    "Open Curio and sign in with your Nextcloud server address.": "Open Curio en log in met het adres van je Nextcloud-server.",
     "Every reference is a real file in your Nextcloud, so your collection stays yours.": "Elke referentie is een echt bestand in je Nextcloud, dus je verzameling blijft van jou.",
     "Take the tour": "Rondleiding starten",
     "Organize and share": "Ordenen en delen",
@@ -288,6 +287,7 @@ OC.L10N.register(
     "Importing {done} of {total}...": "{done} van {total} importeren...",
     "No bookmarks found in this file.": "Geen bladwijzers gevonden in dit bestand.",
     "Upload photos and PDFs from your phone, or share them to Curio from any app.": "Upload foto's en pdf's vanaf je telefoon, of deel ze vanuit elke app met Curio.",
-    "Upload photos and PDFs from your phone.": "Upload foto's en pdf's vanaf je telefoon."
+    "Upload photos and PDFs from your phone.": "Upload foto's en pdf's vanaf je telefoon.",
+    "Open Curio and sign in with your Nextcloud server address:": "Open Curio en log in met het adres van je Nextcloud-server:"
 },
     "nplurals=2; plural=(n != 1);");
