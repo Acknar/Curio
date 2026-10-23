@@ -613,3 +613,49 @@
 .curio .tour-dots { flex: 1; display: flex; gap: 6px; }
 .curio .tour-dots button { width: 8px; height: 8px; border-radius: 50%; background: var(--border); padding: 0; }
 .curio .tour-dots button.on { background: var(--primary); width: 20px; border-radius: 4px; }
+
+/* Tour welcome screen. Variants under review: tw-a (board image behind the text),
+   tw-b (image banner), tw-c (tile mosaic), tw-d (type and chips only). */
+.curio .modal.tour.is-welcome { position: relative; overflow: hidden; }
+.curio .modal.tour.is-welcome .mhead { position: absolute; top: 0; left: 0; right: 0; z-index: 3; background: none; border: 0; }
+.curio .modal.tour.is-welcome .mhead h2 { visibility: hidden; }
+.curio .modal.tour.is-welcome .mbody { position: relative; z-index: 2; }
+.curio .modal.tour.is-welcome .mfoot { position: relative; z-index: 2; }
+.curio .tour-welcome { padding: 18px 4px 4px; }
+.curio .tw-logo { width: 52px; height: 52px; border-radius: 15px; display: grid; place-items: center; background: linear-gradient(135deg, #0082c9, #30b6ff); color: #fff; margin-bottom: 18px; box-shadow: 0 6px 18px rgba(0, 130, 201, .35); }
+.curio .tw-logo svg { width: 30px; height: 30px; }
+.curio .tw-title { font-size: 30px; line-height: 1.15; font-weight: 750; margin: 0 0 16px; letter-spacing: -.01em; }
+.curio .tw-lead { font-size: 19px; line-height: 1.55; margin: 0 0 16px; font-weight: 500; }
+.curio .tw-text { font-size: 16px; line-height: 1.65; margin: 0 0 18px; color: var(--text); }
+.curio .tw-note { font-size: 13.5px; line-height: 1.5; margin: 0; color: var(--text-soft); }
+
+/* a: the board image fills the dialog and fades into it behind the text. */
+.curio .modal.tour.tw-a { background: var(--surface); }
+.curio .modal.tour.tw-a::before { content: ""; position: absolute; inset: 0; z-index: 1; background: var(--tour-img) center top / cover no-repeat; opacity: .9; }
+.curio .modal.tour.tw-a::after { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(to bottom, color-mix(in srgb, var(--surface) 15%, transparent) 0%, color-mix(in srgb, var(--surface) 70%, transparent) 26%, var(--surface) 48%); }
+.curio .tw-a .tour-welcome { padding-top: clamp(120px, 22vh, 220px); }
+
+/* b: the image as a banner across the top, fading into the dialog. */
+.curio .tw-b .tw-banner { height: 210px; margin: -28px -24px 0; background-size: cover; background-position: center 18%; -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent); mask-image: linear-gradient(to bottom, #000 45%, transparent); }
+.curio .tw-b .tw-logo { margin-top: -40px; position: relative; }
+
+/* c: a mosaic of tiles in Curio's tag colours, like a board seen from afar. */
+.curio .tw-c .tw-mosaic { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 26px; gap: 8px; margin: -28px -24px 0; padding: 34px 24px 0; height: 150px; overflow: hidden; -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent); mask-image: linear-gradient(to bottom, #000 30%, transparent); }
+.curio .tw-c .tw-mosaic span { border-radius: 9px; background: var(--c, #c0634a); }
+.curio .tw-c .tw-mosaic span:nth-child(1) { --c: #c0634a; grid-row: span 3; }
+.curio .tw-c .tw-mosaic span:nth-child(2) { --c: #7a5ba6; grid-row: span 2; }
+.curio .tw-c .tw-mosaic span:nth-child(3) { --c: #e9b07a; grid-row: span 4; }
+.curio .tw-c .tw-mosaic span:nth-child(4) { --c: #0082c9; grid-row: span 2; }
+.curio .tw-c .tw-mosaic span:nth-child(5) { --c: #d6c58a; grid-row: span 3; }
+.curio .tw-c .tw-mosaic span:nth-child(6) { --c: #a3794f; grid-row: span 2; }
+.curio .tw-c .tw-mosaic span:nth-child(7) { --c: #e07b5f; grid-row: span 3; }
+.curio .tw-c .tw-mosaic span:nth-child(8) { --c: #6f8fa8; grid-row: span 2; }
+.curio .tw-c .tw-mosaic span:nth-child(n+9) { --c: #b5525f; grid-row: span 2; }
+.curio .tw-c .tw-logo { margin-top: -26px; position: relative; }
+
+/* d: no picture, bigger type and the kinds of reference as chips. */
+.curio .tw-d .tour-welcome { padding-top: 30px; }
+.curio .tw-d .tw-title { font-size: 34px; }
+.curio .tw-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
+.curio .tw-chips > span { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-size: 13.5px; font-weight: 600; }
+.curio .modal.tour.is-welcome .mhead .close { background: color-mix(in srgb, var(--surface) 75%, transparent); border-radius: 50%; }

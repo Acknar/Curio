@@ -54,6 +54,11 @@ async function setup(context, opts = {}) {
 			if (!fs.existsSync(f)) return route.fulfill({ status: 404, body: '' });
 			return route.fulfill({ contentType: 'application/javascript', body: fs.readFileSync(f) });
 		}
+		if (u.pathname.startsWith('/apps/curio/img/')) {
+			const f = path.join(JS, '..', 'img', path.basename(u.pathname));
+			if (!fs.existsSync(f)) return route.fulfill({ status: 404, body: '' });
+			return route.fulfill({ contentType: f.endsWith('.webp') ? 'image/webp' : 'image/svg+xml', body: fs.readFileSync(f) });
+		}
 		if (u.pathname.endsWith('/api/state')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify(state(opts)) });
 		if (u.pathname.includes('/api/')) return route.fulfill({ contentType: 'application/json', body: '{}' });
 		return route.fulfill({ contentType: 'text/html', headers: { 'Content-Security-Policy': CSP }, body: page() });

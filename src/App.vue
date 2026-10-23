@@ -609,15 +609,23 @@
 
 		<!-- First-run tour (once per user; replay from Settings) -->
 		<div v-if="tourOpen" class="scrim show tour-scrim">
-			<div class="modal show tour" @touchstart.passive="tourTouchStart" @touchend="tourTouchEnd">
+			<div class="modal show tour" :class="tourSteps[tourStep].k === 'welcome' ? ['is-welcome', 'tw-' + tourWelcomeStyle] : null" :style="tourSteps[tourStep].k === 'welcome' && tourWelcomeStyle === 'a' ? { '--tour-img': 'url(' + tourWelcomeImg + ')' } : null" @touchstart.passive="tourTouchStart" @touchend="tourTouchEnd">
 				<div class="mhead"><h2>{{ tourSteps[tourStep].title }}</h2><button class="close" :title="tr('Skip the tour')" @click="finishTour" v-html="icon('x', 18)" /></div>
 				<div class="mbody tour-body">
-					<div class="tour-art" v-html="icon(tourSteps[tourStep].icon, 30)" />
-					<template v-if="tourSteps[tourStep].k === 'welcome'">
-						<p class="tour-lead">{{ tr('Curio gathers the images, links, videos, PDFs and notes you collect into visual boards. This short tour shows you around.') }}</p>
-						<p class="tour-lead">{{ tr('Every reference is a real file in your Nextcloud Files, in the folder you chose for Curio, so your collection stays yours.') }}</p>
-					</template>
-					<ul v-else-if="tourSteps[tourStep].k === 'add'" class="tour-list">
+					<div v-if="tourSteps[tourStep].k === 'welcome'" class="tour-welcome">
+						<div v-if="tourWelcomeStyle === 'b'" class="tw-banner" :style="{ backgroundImage: 'url(' + tourWelcomeImg + ')' }" />
+						<div v-if="tourWelcomeStyle === 'c'" class="tw-mosaic" aria-hidden="true"><span v-for="n in 12" :key="n" /></div>
+						<div class="tw-logo" v-html="logoSvg" />
+						<h1 class="tw-title">{{ tr('Welcome to Curio') }}</h1>
+						<p class="tw-lead">{{ tr('Curio turns the images, links, videos and notes you collect into visual boards you can filter, tag and share.') }}</p>
+						<p class="tw-text">{{ tr('Paste a link from Pinterest, Instagram, YouTube or any website and it pulls in the picture, title and a snapshot for you. Upload your own photos, drop in a PDF, or jot a quick note.') }}</p>
+						<div v-if="tourWelcomeStyle === 'd'" class="tw-chips">
+							<span v-for="c in [['image', 'Images'], ['link', 'Web pages'], ['video', 'Videos'], ['pdf', 'PDFs'], ['text', 'Text notes']]" :key="c[0]"><span v-html="icon(c[0], 15)" />{{ tr(c[1]) }}</span>
+						</div>
+						<p class="tw-note">{{ tr('Every reference is a real file in your Nextcloud, so your collection stays yours.') }}</p>
+					</div>
+					<div v-else class="tour-art" v-html="icon(tourSteps[tourStep].icon, 30)" />
+					<ul v-if="tourSteps[tourStep].k === 'add'" class="tour-list">
 						<li><span v-html="icon('link', 17)" />{{ tr('Paste a link from Pinterest, Instagram, YouTube or any website with Add reference: the picture, title, description and place are fetched for you.') }}</li>
 						<li><span v-html="icon('image', 17)" />{{ tr('Upload photos and PDFs, or drop images and links straight onto the board.') }}</li>
 						<li><span v-html="icon('text', 17)" />{{ tr('Write notes for the ideas that do not have a link yet.') }}</li>
@@ -626,12 +634,8 @@
 					<ul v-else-if="tourSteps[tourStep].k === 'organize'" class="tour-list">
 						<li><span v-html="icon('tag', 17)" />{{ tr('Tags have colors and live in folders in the sidebar. The eye next to a tag or a board shows or hides it.') }}</li>
 						<li><span v-html="icon('filter', 17)" />{{ tr('Filter by type, or search titles and descriptions.') }}</li>
-						<li><span v-html="icon('grid', 17)" />{{ tr('Switch between the grid, vertical, horizontal and map layouts at the top right.') }}</li>
-						<li><span v-html="icon('pin', 17)" />{{ tr('References with a place appear on the map. Places are detected from captions, or set in a reference\'s Location.') }}</li>
-					</ul>
-					<ul v-else-if="tourSteps[tourStep].k === 'share'" class="tour-list">
-						<li><span v-html="icon('users', 17)" />{{ tr('Share a board with people on your Nextcloud, with view-only or edit access, from Manage boards in the sidebar.') }}</li>
-						<li><span v-html="icon('comment', 17)" />{{ tr('Leave comments on a reference to discuss it in context.') }}</li>
+						<li><span v-html="icon('grid', 17)" />{{ tr('Switch between the grid, vertical, horizontal and map layouts at the top right. References with a place show up on the map.') }}</li>
+						<li><span v-html="icon('users', 17)" />{{ tr('Share a board with people on your Nextcloud, with view-only or edit access, from Manage boards in the sidebar, and comment on references to discuss them.') }}</li>
 						<li><span v-html="icon('folder', 17)" />{{ tr('Export or import a board as CSV from Settings.') }}</li>
 					</ul>
 					<template v-else-if="tourSteps[tourStep].k === 'app'">
@@ -660,7 +664,7 @@
 				<div class="mfoot tour-foot">
 					<div class="tour-dots"><button v-for="(st, i) in tourSteps" :key="st.k" :class="{ on: i === tourStep }" :title="st.title" @click="tourStep = i" /></div>
 					<button v-if="tourStep > 0" class="btn" @click="tourStep--">{{ tr('Back') }}</button>
-					<button v-if="tourStep < tourSteps.length - 1" class="btn primary" @click="tourStep++">{{ tr('Next') }}</button>
+					<button v-if="tourStep < tourSteps.length - 1" class="btn primary" @click="tourStep++">{{ tourStep === 0 ? tr('Take the tour') : tr('Next') }}</button>
 					<button v-else class="btn primary" @click="finishTour">{{ tr('Start using Curio') }}</button>
 				</div>
 			</div>
@@ -783,6 +787,8 @@ export default {
 			dataBoardId: null, dataMsg: '', dataBusy: false,
 			mapKey: '', mapCanEdit: false, mapKeyInput: '', mapKeyBusy: false, mapKeyMsg: '', mapLoadError: false,
 			tourOpen: false, tourStep: 0, onboardingDone: true,
+			// Welcome screen design under review: a (image behind), b (image banner), c (tile mosaic), d (type only).
+			tourWelcomeStyle: (typeof window !== 'undefined' && window.__curioTourStyle) || 'a',
 			appApkUrl: APP_APK_URL, appReleasesUrl: APP_RELEASES_URL,
 			inAndroidApp: typeof window.CurioAndroid !== 'undefined',
 			isAndroid: /Android/i.test(navigator.userAgent || ''),
@@ -798,12 +804,17 @@ export default {
 			const steps = [
 				{ k: 'welcome', icon: 'sparkle', title: this.tr('Welcome to Curio') },
 				{ k: 'add', icon: 'image', title: this.tr('Add references') },
-				{ k: 'organize', icon: 'tag', title: this.tr('Organize and browse') },
-				{ k: 'share', icon: 'users', title: this.tr('Share and discuss') },
+				{ k: 'organize', icon: 'tag', title: this.tr('Organize and share') },
 			]
 			// Inside the Android app the app step is pointless; it has its own introduction.
 			if (!this.inAndroidApp) steps.push({ k: 'app', icon: 'phone', title: this.tr('Curio on your phone') })
 			return steps
+		},
+		logoSvg() {
+			return '<svg viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect x="25" y="25" width="96" height="124" rx="18"/><rect x="25" y="163" width="96" height="68" rx="18"/><rect x="135" y="25" width="96" height="68" rx="18"/><rect x="135" y="107" width="96" height="124" rx="18"/></g></svg>'
+		},
+		tourWelcomeImg() {
+			return generateFilePath('curio', 'img', 'tour-welcome.webp')
 		},
 		appQrSvg() {
 			const qr = qrcode(0, 'M')
