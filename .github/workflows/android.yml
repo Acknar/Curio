@@ -13,6 +13,13 @@ on:
     tags:
       - 'android-v*'
   workflow_dispatch:
+  # Called by release.yml to attach the APK to a Curio release.
+  workflow_call:
+    inputs:
+      release_tag:
+        type: string
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -107,4 +114,11 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/android-v')
         uses: softprops/action-gh-release@v2
         with:
+          files: android/app/build/outputs/apk/release/*.apk
+
+      - name: Attach to the Curio release
+        if: ${{ inputs.release_tag }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag }}
           files: android/app/build/outputs/apk/release/*.apk

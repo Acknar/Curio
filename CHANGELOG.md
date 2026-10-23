@@ -4,11 +4,12 @@ All notable changes to Curio are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.0.1 - 2026-10-23
 
 ### Changed
 
-- New App Store description.
+- New App Store description, with screenshots.
+- GitHub releases now also carry the Curio for Android APK.
 - Supports Nextcloud 35 (supported range now 31 to 35). Checked against the Nextcloud 35 critical changes (PHP 8.3 minimum, database wrapper, Symfony Console 7, removed front-end globals and back-end APIs); Curio uses none of the removed APIs, so only the supported range changed.
 
 ## 2.0.0 - 2026-10-23

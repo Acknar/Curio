@@ -1,10 +1,10 @@
 name: Curio release
 
 # Publishes a GitHub release with the Nextcloud app archive (curio-X.Y.Z.tar.gz,
-# top folder "curio/") ready for the App Store. Runs when a tag like v2.0.0 is
-# pushed, or when a push changes the version in appinfo/info.xml; then the tag
-# vX.Y.Z is created on that commit. A version that already has a release is
-# left alone.
+# top folder "curio/") ready for the App Store, plus the Curio for Android APK.
+# Runs when a tag like v2.0.0 is pushed, or when a push changes the version in
+# appinfo/info.xml; then the tag vX.Y.Z is created on that commit. A version
+# that already has a release is left alone.
 
 on:
   push:
@@ -22,10 +22,14 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      skip: ${{ steps.version.outputs.skip }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Work out the version
+        id: version
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -37,9 +41,11 @@ jobs:
             v="$xml"
           fi
           echo "VERSION=$v" >> "$GITHUB_ENV"
+          echo "version=$v" >> "$GITHUB_OUTPUT"
           if gh release view "v$v" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release v$v already exists; nothing to do."
             echo "SKIP=1" >> "$GITHUB_ENV"
+            echo "skip=1" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Validate appinfo/info.xml against the App Store schema
@@ -77,3 +83,14 @@ jobs:
           body_path: notes.md
           files: curio-${{ env.VERSION }}.tar.gz
           make_latest: true
+
+  # The Curio for Android APK, built and attached to the same release.
+  apk:
+    needs: release
+    if: needs.release.outputs.skip != '1'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/android.yml
+    with:
+      release_tag: v${{ needs.release.outputs.version }}
+    secrets: inherit

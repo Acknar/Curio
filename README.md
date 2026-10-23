@@ -2,6 +2,8 @@
 
 [Curio on the Nextcloud App Store](https://apps.nextcloud.com/apps/curio)
 
+![Curio boards](screenshots/1-boards.jpg)
+
 A Nextcloud app for curating images, links, videos, PDFs and text notes into
 visual boards, right inside Nextcloud.
 

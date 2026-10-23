@@ -39,7 +39,7 @@ Share a board with anyone on your Nextcloud, with view-only or full edit access.
 - A button in the settings lets you export or import a board as CSV of references.
 - Everything remains on your server, nothing is sent to a third party. Your references live on your server, under your control.
 	]]></description>
-	<version>2.0.0</version>
+	<version>2.0.1</version>
 	<licence>AGPL-3.0-or-later</licence>
 	<author mail="acknar75@gmail.com">Acknar</author>
 	<namespace>Curio</namespace>
@@ -48,6 +48,10 @@ Share a board with anyone on your Nextcloud, with view-only or full edit access.
 	<website>https://github.com/Acknar/Curio</website>
 	<bugs>https://github.com/Acknar/Curio/issues</bugs>
 	<repository type="git">https://github.com/Acknar/Curio.git</repository>
+	<screenshot small-thumbnail="https://raw.githubusercontent.com/Acknar/Curio/v2.0.1/screenshots/1-boards-small.jpg">https://raw.githubusercontent.com/Acknar/Curio/v2.0.1/screenshots/1-boards.jpg</screenshot>
+	<screenshot small-thumbnail="https://raw.githubusercontent.com/Acknar/Curio/v2.0.1/screenshots/2-add-reference-small.jpg">https://raw.githubusercontent.com/Acknar/Curio/v2.0.1/screenshots/2-add-reference.jpg</screenshot>
+	<screenshot small-thumbnail="https://raw.githubusercontent.com/Acknar/Curio/v2.0.1/screenshots/3-reference-detail-small.jpg">https://raw.githubusercontent.com/Acknar/Curio/v2.0.1/screenshots/3-reference-detail.jpg</screenshot>
+	<screenshot small-thumbnail="https://raw.githubusercontent.com/Acknar/Curio/v2.0.1/screenshots/4-map-small.jpg">https://raw.githubusercontent.com/Acknar/Curio/v2.0.1/screenshots/4-map.jpg</screenshot>
 	<dependencies>
 		<nextcloud min-version="31" max-version="35"/>
 	</dependencies>

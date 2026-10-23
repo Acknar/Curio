@@ -13,7 +13,9 @@ State of the Curio project (Nextcloud app + Android app) at the end of the sessi
 
 ## Next steps
 
-### 1. Screenshots on the App Store page (waiting on the user's images)
+### 1. Screenshots on the App Store page (done in 2.0.1)
+
+The user's four screenshots are in `screenshots/` (JPG plus 800 px thumbnails) and referenced from `appinfo/info.xml` via the `v2.0.1` tag. The plan below is what was followed; reuse it for future screenshot changes.
 
 The App Store page has no editor: it is built from `appinfo/info.xml` of each uploaded release. Images are `<screenshot>` elements with HTTPS URLs, placed after `<repository>` and before `<dependencies>` (confirmed against the App Store schema). An optional `small-thumbnail` attribute gives a smaller image.
 
