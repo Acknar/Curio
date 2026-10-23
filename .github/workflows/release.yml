@@ -4,7 +4,9 @@ name: Curio release
 # top folder "curio/") ready for the App Store, plus the Curio for Android APK.
 # Runs when a tag like v2.0.0 is pushed, or when a push changes the version in
 # appinfo/info.xml; then the tag vX.Y.Z is created on that commit. A version
-# that already has a release is left alone.
+# that already has a release is left alone, unless the pushed commit's message
+# contains "[replace release]": then that release and its tag are deleted and
+# rebuilt from the pushed commit (for a version not yet uploaded to the App Store).
 
 on:
   push:
@@ -32,6 +34,7 @@ jobs:
         id: version
         env:
           GH_TOKEN: ${{ github.token }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           xml=$(sed -n 's:.*<version>\(.*\)</version>.*:\1:p' appinfo/info.xml | head -1)
           if [ "$GITHUB_REF_TYPE" = "tag" ]; then
@@ -43,9 +46,14 @@ jobs:
           echo "VERSION=$v" >> "$GITHUB_ENV"
           echo "version=$v" >> "$GITHUB_OUTPUT"
           if gh release view "v$v" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "Release v$v already exists; nothing to do."
-            echo "SKIP=1" >> "$GITHUB_ENV"
-            echo "skip=1" >> "$GITHUB_OUTPUT"
+            if [ "$GITHUB_REF_TYPE" != "tag" ] && printf '%s' "$COMMIT_MESSAGE" | grep -qF '[replace release]'; then
+              echo "Replacing release v$v with this commit."
+              gh release delete "v$v" --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes
+            else
+              echo "Release v$v already exists; nothing to do."
+              echo "SKIP=1" >> "$GITHUB_ENV"
+              echo "skip=1" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
       - name: Validate appinfo/info.xml against the App Store schema
