@@ -1,0 +1,74 @@
+[
+  {
+    "theme": "light",
+    "view": "world",
+    "attribution": " Leaflet | OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+    "notice": "",
+    "errors": [],
+    "openfreemapRequests": 26,
+    "sample": [
+      "200 /styles/positron",
+      "200 /sprites/ofm_f384/ofm.json",
+      "200 /sprites/ofm_f384/ofm.png",
+      "200 /planet",
+      "200 /planet/20261018_080001_pt/1/1/1.pbf",
+      "200 /planet/20261018_080001_pt/1/0/1.pbf",
+      "200 /planet/20261018_080001_pt/1/1/0.pbf",
+      "200 /planet/20261018_080001_pt/1/0/0.pbf"
+    ]
+  },
+  {
+    "theme": "light",
+    "view": "barcelona",
+    "attribution": " Leaflet | OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+    "notice": "",
+    "errors": [],
+    "openfreemapRequests": 14,
+    "sample": [
+      "200 /styles/positron",
+      "200 /planet",
+      "200 /sprites/ofm_f384/ofm.json",
+      "200 /sprites/ofm_f384/ofm.png",
+      "200 /planet/20261018_080001_pt/10/519/382.pbf",
+      "200 /planet/20261018_080001_pt/10/518/382.pbf",
+      "200 /planet/20261018_080001_pt/10/516/381.pbf",
+      "200 /planet/20261018_080001_pt/10/516/382.pbf"
+    ]
+  },
+  {
+    "theme": "dark",
+    "view": "world",
+    "attribution": " Leaflet | OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+    "notice": "",
+    "errors": [],
+    "openfreemapRequests": 22,
+    "sample": [
+      "200 /styles/dark",
+      "200 /planet",
+      "200 /sprites/ofm_f384/ofm.png",
+      "200 /sprites/ofm_f384/ofm.json",
+      "200 /planet/20261018_080001_pt/1/1/0.pbf",
+      "200 /planet/20261018_080001_pt/1/1/0.pbf",
+      "200 /planet/20261018_080001_pt/1/0/1.pbf",
+      "200 /planet/20261018_080001_pt/1/0/1.pbf"
+    ]
+  },
+  {
+    "theme": "dark",
+    "view": "barcelona",
+    "attribution": " Leaflet | OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+    "notice": "",
+    "errors": [],
+    "openfreemapRequests": 13,
+    "sample": [
+      "200 /styles/dark",
+      "200 /planet",
+      "200 /sprites/ofm_f384/ofm.json",
+      "200 /sprites/ofm_f384/ofm.png",
+      "200 /planet/20261018_080001_pt/10/519/382.pbf",
+      "200 /planet/20261018_080001_pt/10/518/382.pbf",
+      "200 /planet/20261018_080001_pt/10/519/381.pbf",
+      "200 /planet/20261018_080001_pt/10/518/381.pbf"
+    ]
+  }
+]
