@@ -1,6 +1,6 @@
 {
 	"name": "curio",
-	"version": "2.1.2",
+	"version": "2.2.0",
 	"description": "Curio frontend",
 	"private": true,
 	"scripts": {

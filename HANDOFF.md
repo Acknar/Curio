@@ -1,6 +1,6 @@
 # Curio handoff
 
-State of the Curio project (Nextcloud app, Android app, browser clipper) at the end of the session of 2026-10-24 (Curio 2.1.2 released, Curio for Android 1.2.1, Curio Web Clipper 1.2.0 not released), and what comes next.
+State of the Curio project (Nextcloud app, Android app, browser clipper) at the end of the session of 2026-10-24 (Curio 2.2.0 released with Curio for Android 1.2.1 and Curio Web Clipper 1.2.0), and what comes next.
 
 ## Requests, as written
 
@@ -33,8 +33,10 @@ Branch `claude/optimistic-brown-2zdcbe`, started from `claude/exciting-volta-o8u
 15. "You can read the handoff from the previous curio session that added a curio .apk for webclipper functionnality on phones. I would also like to have a solution for desktop. There was the firefox webclipper but I would an app be better to do this ?"
     Answer given: a browser extension rather than a desktop app (it reads the page the user is signed in to, has toolbar/right-click/hotkey entry points, no desktop share menu to rely on, one codebase for Firefox and Chromium browsers, no code-signing costs; the full Curio is already the web page).
 16. "[Curio_versions.zip] Ok do the improved extension and make it for chrome as well"
+17. "[AMO JWT issuer and secret]" (pasted in the chat; not stored anywhere in the repository) / "ok, done" (the user added the secrets `AMO_JWT_ISSUER` and `AMO_JWT_SECRET` in GitHub) / "yes" (to releasing Curio 2.2.0).
+    Released 2.2.0: `appinfo/info.xml`, `package.json`, `package-lock.json`, `ClipController` ping version, `CHANGELOG.md`, `extension/CHANGELOG.md`. The user uploads `curio-2.2.0.tar.gz` to the App Store.
 
-Done (not released; Curio changes are under `## Unreleased` in `CHANGELOG.md`, the clipper is 1.2.0 in `extension/`):
+Done, released as Curio 2.2.0 with clipper 1.2.0:
 
 - `extension/`: the clipper, built for Firefox and Chrome from one source by `extension/build.mjs` (`dist/firefox`, `dist/chrome`, zips). It runs Curio for Android's share dialog and scripts unchanged (copied at build time from `android/app/src/main/assets/ui/`, plus `src/styles.css` and `l10n/*.json`) on `src/ui/bridge.js`, a browser implementation of the app's `window.Android` bridge (storage.local config with the 1.1.0 keys, fetch with a declarativeNetRequest session rule for User-Agent/Referer, the tab's DOM read by `page-extractors.js` as the "render"). `src/ui/clip-ext.js` merges the tab's DOM with the Android extraction chain (platforms) or uses the DOM alone (other sites), handles selection notes, right-clicked images and links. Settings page `src/ui/options.html/.js`: Login Flow v2 (opens the login in a tab, polls, closes the tab, names the app password "Curio Web Clipper (Chrome on Linux)"), manual app password, default board, click hotkey or off, how to clip, Firefox website-access check. Alt+Shift+C command. Translations in `src/ui/ext-l10n.js` and `src/_locales/`. Source of 1.1.0 came from the user's `Curio_versions.zip` (`curio-webclipper-1.1.0/`).
 - Tests: `cd extension && npm install && npm test` (13: clip window end to end in jsdom, settings page, translation coverage). Also checked by loading `dist/chrome` in Playwright Chromium against a fake Nextcloud: header rule works on the extension's own requests, Login Flow v2, a toolbar clip with image upload, Ctrl+click, selection note, light and dark. Not tried in a real Firefox (none in the session) and not against live Instagram/Pinterest (blocked hosts). `web-ext lint`: 0 errors, 9 warnings (innerHTML, Android API).
@@ -43,10 +45,9 @@ Done (not released; Curio changes are under `## Unreleased` in `CHANGELOG.md`, t
 
 Next steps:
 
-1. User: create AMO API keys (addons.mozilla.org > Tools > Manage API Keys, same account as the add-on id `curio-webclipper@acknar.curio`) and add the secrets `AMO_JWT_ISSUER` and `AMO_JWT_SECRET` to the repository. Without them the tour's Add to Firefox link has no file behind it.
-2. Release: bump Curio to 2.2.0 (`appinfo/info.xml`, `package.json`, `package-lock.json`, `ClipController` ping version, `CHANGELOG.md` Unreleased > 2.2.0, `extension/CHANGELOG.md` date), only when the user asks.
-3. Optional: Chrome Web Store listing (steps in `extension/README.md`), then set `CLIPPER_CHROME_STORE_URL`.
-4. Test the clipper in a real Firefox and on the user's server.
+1. Check the release's signing step produced `curio-webclipper-firefox.xpi`; the clipper's next change needs a version bump in `extension/src/manifest.json` and `extension/package.json` to be signed again.
+2. Optional: Chrome Web Store listing (steps in `extension/README.md`), then set `CLIPPER_CHROME_STORE_URL`.
+3. Test the clipper in a real Firefox and on the user's server.
 
 ## Done in 2.1.0 / Android 1.2.0 (requests 9 and 10)
 
