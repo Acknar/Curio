@@ -72,7 +72,17 @@ Download the latest APK from
 [Releases](https://github.com/Acknar/Curio/releases/latest/download/curio-android.apk);
 Curio's first-run tour (replayable from Settings > Help) links to it with a QR
 code and install steps. See [android/README.md](android/README.md). It is not part of the Nextcloud app;
-leave `android/`, `.github/` and `node_modules/` out when packaging the app.
+leave `android/`, `extension/`, `.github/` and `node_modules/` out when packaging the app.
+
+## Browser clipper
+
+The `extension/` folder holds the Curio Web Clipper for Firefox, Chrome, Edge,
+Brave and Opera: a toolbar button, right-click menu and hotkey that add the page,
+post, image or video you are looking at to a board, read as your browser shows
+it. Each [release](https://github.com/Acknar/Curio/releases/latest) carries it,
+and Curio's tour links to it on a computer. See
+[extension/README.md](extension/README.md). Like `android/`, it is not part of
+the Nextcloud app.
 
 ## License
 

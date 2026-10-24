@@ -1,0 +1,17 @@
+{
+	"extName": {
+		"message": "Curio Web Clipper"
+	},
+	"extDescription": {
+		"message": "Salva su una bacheca Curio del tuo Nextcloud post, immagini, video e pagine da Instagram, Pinterest, TikTok o qualsiasi sito."
+	},
+	"actionTitle": {
+		"message": "Salva in Curio"
+	},
+	"menuClip": {
+		"message": "Salva in Curio"
+	},
+	"commandClip": {
+		"message": "Salva la pagina corrente in Curio"
+	}
+}

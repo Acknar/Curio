@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Curio Web Clipper</title>
+	<link rel="stylesheet" href="../curio/styles.css">
+	<link rel="stylesheet" href="app.css">
+	<link rel="stylesheet" href="ext.css">
+</head>
+<body>
+	<!-- Laid out like Curio's Settings dialog, as a page. -->
+	<div class="curio page" id="root">
+		<div class="modal pagemodal extpage">
+			<div class="mhead"><span class="brand-mark" id="logo"></span><h2>Curio Web Clipper</h2></div>
+			<div class="mbody">
+				<!-- Not connected yet -->
+				<div id="connect" class="hidden">
+					<p class="lead" data-tr="Connect the clipper to your Nextcloud to add posts, images, videos and pages to your boards from any website.">Connect the clipper to your Nextcloud to add posts, images, videos and pages to your boards from any website.</p>
+					<div id="hostAccess" class="sheet-note hidden">
+						<span data-tr="The clipper needs access to websites to read the page you clip and to reach your Nextcloud.">The clipper needs access to websites to read the page you clip and to reach your Nextcloud.</span>
+						<button class="btn" id="cAllow" style="margin-top:8px" data-tr="Allow access to websites">Allow access to websites</button>
+					</div>
+					<div class="field"><label data-tr="Nextcloud address">Nextcloud address</label>
+						<input id="cServer" type="url" inputmode="url" placeholder="https://cloud.example.com" spellcheck="false" autocapitalize="off">
+					</div>
+					<button class="btn primary block" id="cLogin" data-tr="Sign in with Nextcloud">Sign in with Nextcloud</button>
+					<div id="cWaiting" class="waitcard hidden"><span class="spin"></span><span data-tr="Finish signing in on the page that opened, then come back here.">Finish signing in on the page that opened, then come back here.</span></div>
+					<div id="cWaitBtns" class="hidden" style="display:flex;gap:8px;margin-top:10px">
+						<button class="btn" id="cReopen" data-tr="Open the page again">Open the page again</button>
+						<button class="btn" id="cCancel" data-tr="Cancel">Cancel</button>
+					</div>
+					<div id="cStatus" class="status"></div>
+
+					<div class="setup-or"><span data-tr="or">or</span></div>
+					<div class="field"><label data-tr="Username">Username</label><input id="mUser" spellcheck="false" autocapitalize="off" autocomplete="username"></div>
+					<div class="field"><label data-tr="App password">App password</label><input id="mPw" type="password" autocomplete="off" placeholder="xxxxx-xxxxx-xxxxx-xxxxx-xxxxx"></div>
+					<div class="hint" data-tr="Create one in Nextcloud under Personal settings, Security, Devices &amp; sessions.">Create one in Nextcloud under Personal settings, Security, Devices &amp; sessions.</div>
+					<div style="display:flex;gap:8px;margin-top:12px">
+						<button class="btn" id="mTest" data-tr="Test">Test</button>
+						<button class="btn primary" id="mSave" data-tr="Connect">Connect</button>
+					</div>
+				</div>
+
+				<!-- Connected -->
+				<div id="connected" class="hidden">
+					<div class="field">
+						<label data-tr="Nextcloud">Nextcloud</label>
+						<div class="card-box"><div id="sWho"></div><div class="hint" id="sVersion" style="margin-top:4px"></div></div>
+						<button class="btn danger" id="sDisconnect" style="margin-top:10px" data-tr="Disconnect">Disconnect</button>
+						<div class="hint" style="margin-top:6px" data-tr="Disconnecting forgets the app password in this browser. Revoke it in Nextcloud under Security, Devices &amp; sessions.">Disconnecting forgets the app password in this browser. Revoke it in Nextcloud under Security, Devices &amp; sessions.</div>
+					</div>
+
+					<div class="field">
+						<label for="sBoard" data-tr="Default board">Default board</label>
+						<select id="sBoard" class="rb-select"><option value="" data-tr="First board">First board</option></select>
+						<div class="hint" id="sBoardHint" style="margin-top:6px"></div>
+					</div>
+
+					<div class="field">
+						<label for="sHotkey" data-tr="Click hotkey">Click hotkey</label>
+						<select id="sHotkey" class="rb-select">
+							<option value="ctrl" data-tr="Ctrl + click">Ctrl + click</option>
+							<option value="alt" data-tr="Alt + click">Alt + click</option>
+							<option value="shift" data-tr="Shift + click">Shift + click</option>
+							<option value="meta" data-tr="Cmd + click">Cmd + click</option>
+							<option value="off" data-tr="Off">Off</option>
+						</select>
+						<div class="hint" style="margin-top:6px" data-tr="Hold the key and click an image, a video, a PDF link or selected text to clip it.">Hold the key and click an image, a video, a PDF link or selected text to clip it.</div>
+					</div>
+
+					<div class="field">
+						<label data-tr="How to clip">How to clip</label>
+						<ul class="tour-list" id="howTo"></ul>
+					</div>
+
+					<div class="sheet-note" data-tr="The clipper reads the page in your browser as you see it, including posts on Instagram, Pinterest, TikTok or X when you are signed in there. What you clip goes to your Nextcloud and nowhere else. Nothing is posted to those sites and nothing else is taken from your accounts.">The clipper reads the page in your browser as you see it, including posts on Instagram, Pinterest, TikTok or X when you are signed in there. What you clip goes to your Nextcloud and nowhere else. Nothing is posted to those sites and nothing else is taken from your accounts.</div>
+				</div>
+
+				<div class="about" id="sAbout"></div>
+			</div>
+		</div>
+	</div>
+	<script src="../browser-polyfill.min.js"></script>
+	<script src="bridge.js"></script>
+	<script src="boot.js" data-scripts="native.js,app-l10n.js,ext-l10n.js,look.js,curio.js,options.js"></script>
+</body>
+</html>

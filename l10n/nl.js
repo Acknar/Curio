@@ -290,6 +290,21 @@ OC.L10N.register(
     "Upload photos and PDFs from your phone.": "Upload foto's en pdf's vanaf je telefoon.",
     "Open Curio and sign in with your Nextcloud server address:": "Open Curio en log in met het adres van je Nextcloud-server:",
     "Copy": "Kopiëren",
-    "Copied": "Gekopieerd"
+    "Copied": "Gekopieerd",
+    "Curio in your browser": "Curio in je browser",
+    "Get the browser clipper": "Browserclipper downloaden",
+    "The Curio Web Clipper adds a button to your browser that sends the page, post, image or video you are looking at to a board, with the title, caption, picture and place read for you. On Instagram, Pinterest, TikTok and X it reads posts as you see them when you are signed in.": "De Curio Web Clipper voegt een knop aan je browser toe die de pagina, post, afbeelding of video die je bekijkt op een bord bewaart, met de titel, het bijschrift, de afbeelding en de plaats voor je uitgelezen. Op Instagram, Pinterest, TikTok en X leest hij posts zoals jij ze ziet als je daar bent ingelogd.",
+    "Add to Firefox": "Toevoegen aan Firefox",
+    "Add to {browser}": "Toevoegen aan {browser}",
+    "Download for {browser}": "Downloaden voor {browser}",
+    "The clipper works in Firefox, Chrome, Edge, Brave and Opera.": "De clipper werkt in Firefox, Chrome, Edge, Brave en Opera.",
+    "Other browsers, all versions and release notes": "Andere browsers, alle versies en release-opmerkingen",
+    "Click Add to Firefox, then Add when Firefox asks. If Firefox only downloads the file, open it from the downloads button in the toolbar.": "Klik op Toevoegen aan Firefox en daarna op Toevoegen als Firefox erom vraagt. Downloadt Firefox het bestand alleen, open het dan via de downloadknop in de werkbalk.",
+    "On the Chrome Web Store page, click the button to add the clipper.": "Klik op de pagina in de Chrome Web Store op de knop om de clipper toe te voegen.",
+    "Download the clipper and unzip it into a folder you keep.": "Download de clipper en pak hem uit in een map die je bewaart.",
+    "Open {page}, turn on Developer mode and click Load unpacked.": "Open {page}, zet de Ontwikkelaarsmodus aan en klik op Uitgepakte extensie laden.",
+    "Choose the unzipped folder.": "Kies de uitgepakte map.",
+    "Pin the Curio button: open the extensions menu (the puzzle piece) and pin Curio Web Clipper.": "Zet de Curio-knop vast: open het extensiemenu (het puzzelstukje) en zet Curio Web Clipper vast.",
+    "The clipper opens its settings. Sign in with your Nextcloud server address:": "De clipper opent zijn instellingen. Log in met het adres van je Nextcloud-server:"
 },
     "nplurals=2; plural=(n != 1);");

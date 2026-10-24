@@ -289,7 +289,22 @@
         "Upload photos and PDFs from your phone.": "Importez des photos et des PDF depuis votre téléphone.",
         "Open Curio and sign in with your Nextcloud server address:": "Ouvrez Curio et connectez-vous avec l'adresse de votre serveur Nextcloud :",
         "Copy": "Copier",
-        "Copied": "Copié"
+        "Copied": "Copié",
+        "Curio in your browser": "Curio dans votre navigateur",
+        "Get the browser clipper": "Obtenir le clipper pour navigateur",
+        "The Curio Web Clipper adds a button to your browser that sends the page, post, image or video you are looking at to a board, with the title, caption, picture and place read for you. On Instagram, Pinterest, TikTok and X it reads posts as you see them when you are signed in.": "Le Curio Web Clipper ajoute à votre navigateur un bouton qui envoie vers un tableau la page, la publication, l'image ou la vidéo que vous regardez, avec le titre, la légende, l'image et le lieu lus pour vous. Sur Instagram, Pinterest, TikTok et X, il lit les publications telles que vous les voyez lorsque vous y êtes connecté.",
+        "Add to Firefox": "Ajouter à Firefox",
+        "Add to {browser}": "Ajouter à {browser}",
+        "Download for {browser}": "Télécharger pour {browser}",
+        "The clipper works in Firefox, Chrome, Edge, Brave and Opera.": "Le clipper fonctionne dans Firefox, Chrome, Edge, Brave et Opera.",
+        "Other browsers, all versions and release notes": "Autres navigateurs, toutes les versions et notes de version",
+        "Click Add to Firefox, then Add when Firefox asks. If Firefox only downloads the file, open it from the downloads button in the toolbar.": "Cliquez sur Ajouter à Firefox, puis sur Ajouter quand Firefox le demande. Si Firefox se contente de télécharger le fichier, ouvrez-le depuis le bouton des téléchargements de la barre d'outils.",
+        "On the Chrome Web Store page, click the button to add the clipper.": "Sur la page du Chrome Web Store, cliquez sur le bouton pour ajouter le clipper.",
+        "Download the clipper and unzip it into a folder you keep.": "Téléchargez le clipper et décompressez-le dans un dossier que vous conservez.",
+        "Open {page}, turn on Developer mode and click Load unpacked.": "Ouvrez {page}, activez le Mode développeur et cliquez sur Charger l'extension non empaquetée.",
+        "Choose the unzipped folder.": "Choisissez le dossier décompressé.",
+        "Pin the Curio button: open the extensions menu (the puzzle piece) and pin Curio Web Clipper.": "Épinglez le bouton Curio : ouvrez le menu des extensions (la pièce de puzzle) et épinglez Curio Web Clipper.",
+        "The clipper opens its settings. Sign in with your Nextcloud server address:": "Le clipper ouvre ses paramètres. Connectez-vous avec l'adresse de votre serveur Nextcloud :"
     },
     "pluralForm": "nplurals=2; plural=(n > 1);"
 }

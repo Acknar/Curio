@@ -4,6 +4,13 @@ All notable changes to Curio are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- Curio Web Clipper for Firefox, Chrome, Edge, Brave and Opera, kept in the `extension/` folder of the repository (not part of this Nextcloud package). Its toolbar button, right-click menu, Ctrl+click hotkey and Alt+Shift+C shortcut open Curio's Add reference dialog, filled in from the page as the browser shows it. It signs in with your Nextcloud's own login page. Each release carries `curio-webclipper-firefox.xpi` (signed by Mozilla when the repository has the AMO API secrets) and `curio-webclipper-chrome.zip`.
+- Tour, on a computer: a "Curio in your browser" step with an install button for the browser in use (Add to Firefox, or the Chrome, Edge, Brave or Opera package with its install steps) and your server address to sign in with. Settings > Help > Get the browser clipper opens it.
+
 ## 2.1.2 - 2026-10-23
 
 ### Changed

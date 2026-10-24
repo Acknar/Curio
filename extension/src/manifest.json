@@ -1,0 +1,66 @@
+{
+	"manifest_version": 3,
+	"name": "__MSG_extName__",
+	"version": "1.2.0",
+	"description": "__MSG_extDescription__",
+	"default_locale": "en",
+	"homepage_url": "https://github.com/Acknar/Curio",
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "curio-webclipper@acknar.curio",
+			"strict_min_version": "115.0",
+			"data_collection_permissions": {
+				"required": ["none"]
+			}
+		}
+	},
+	"minimum_chrome_version": "110",
+	"permissions": [
+		"storage",
+		"contextMenus",
+		"scripting",
+		"declarativeNetRequestWithHostAccess"
+	],
+	"host_permissions": [
+		"<all_urls>"
+	],
+	"background": {
+		"scripts": ["browser-polyfill.min.js", "background.js"],
+		"service_worker": "background.js"
+	},
+	"content_scripts": [
+		{
+			"matches": ["<all_urls>"],
+			"js": ["browser-polyfill.min.js", "ui/page-extractors.js", "content.js"],
+			"run_at": "document_idle",
+			"all_frames": false
+		}
+	],
+	"action": {
+		"default_title": "__MSG_actionTitle__",
+		"default_icon": {
+			"16": "icons/icon-blue-16.png",
+			"32": "icons/icon-blue-32.png"
+		},
+		"theme_icons": [
+			{ "light": "icons/icon-white-16.png", "dark": "icons/icon-blue-16.png", "size": 16 },
+			{ "light": "icons/icon-white-32.png", "dark": "icons/icon-blue-32.png", "size": 32 }
+		]
+	},
+	"commands": {
+		"clip-page": {
+			"suggested_key": { "default": "Alt+Shift+C" },
+			"description": "__MSG_commandClip__"
+		}
+	},
+	"options_ui": {
+		"page": "ui/options.html",
+		"open_in_tab": true
+	},
+	"icons": {
+		"16": "icons/icon-16.png",
+		"32": "icons/icon-32.png",
+		"48": "icons/icon-48.png",
+		"128": "icons/icon-128.png"
+	}
+}

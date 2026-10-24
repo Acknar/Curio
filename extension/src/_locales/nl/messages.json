@@ -1,0 +1,17 @@
+{
+	"extName": {
+		"message": "Curio Web Clipper"
+	},
+	"extDescription": {
+		"message": "Bewaar posts, afbeeldingen, video's en pagina's van Instagram, Pinterest, TikTok of elke website op een Curio-bord in je Nextcloud."
+	},
+	"actionTitle": {
+		"message": "Bewaren in Curio"
+	},
+	"menuClip": {
+		"message": "Bewaren in Curio"
+	},
+	"commandClip": {
+		"message": "Huidige pagina bewaren in Curio"
+	}
+}

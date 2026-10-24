@@ -1,0 +1,19 @@
+/* ext.css - the clipper's windows. Curio's stylesheet and the Android app's app.css
+   do the rest. */
+
+/* Clip window: Curio's Add reference dialog fills its own popup window instead of
+   sitting over a dimmed app. */
+.curio.sheet .scrim { position: static; inset: auto; background: none; padding: 0; height: 100%; display: block; flex: 1; min-width: 0; }
+.curio.sheet .modal { width: 100%; max-width: none; height: 100vh; max-height: none; border-radius: 0; box-shadow: none; }
+.curio.sheet .toasts { position: fixed; left: 0; right: 0; bottom: 16px; display: flex; justify-content: center; }
+
+/* Settings page, in a browser tab. */
+.curio.page { background: var(--surface-2); }
+.curio .modal.pagemodal.extpage { margin: 32px auto; min-height: 0; border-radius: 16px; box-shadow: var(--shadow-lg); width: min(600px, calc(100% - 24px)); }
+.curio .extpage .mhead { position: static; border-radius: 16px 16px 0 0; }
+.curio .extpage .brand-mark { color: var(--primary); display: inline-flex; }
+.curio .extpage .tour-list li > span + span { flex: 1; height: auto; display: block; background: none; color: inherit; border-radius: 0; }
+.curio .extpage .sheet-note .btn { display: inline-flex; }
+@media (max-width: 640px) {
+	.curio .modal.pagemodal.extpage { margin: 0 auto; border-radius: 0; box-shadow: none; width: 100%; min-height: 100%; }
+}

@@ -1,0 +1,17 @@
+{
+	"extName": {
+		"message": "Curio Web Clipper"
+	},
+	"extDescription": {
+		"message": "Speichern Sie Beiträge, Bilder, Videos und Seiten von Instagram, Pinterest, TikTok oder jeder Website auf einem Curio-Board."
+	},
+	"actionTitle": {
+		"message": "In Curio speichern"
+	},
+	"menuClip": {
+		"message": "In Curio speichern"
+	},
+	"commandClip": {
+		"message": "Aktuelle Seite in Curio speichern"
+	}
+}

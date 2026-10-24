@@ -1,0 +1,17 @@
+{
+	"extName": {
+		"message": "Curio Web Clipper"
+	},
+	"extDescription": {
+		"message": "Ajoutez à un tableau Curio de votre Nextcloud les publications, images, vidéos et pages d'Instagram, Pinterest, TikTok ou tout site."
+	},
+	"actionTitle": {
+		"message": "Envoyer vers Curio"
+	},
+	"menuClip": {
+		"message": "Envoyer vers Curio"
+	},
+	"commandClip": {
+		"message": "Envoyer la page actuelle vers Curio"
+	}
+}

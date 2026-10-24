@@ -1,0 +1,17 @@
+{
+	"extName": {
+		"message": "Curio Web Clipper"
+	},
+	"extDescription": {
+		"message": "Clip posts, images, videos and pages from Instagram, Pinterest, TikTok, YouTube or any website to a Curio board in your Nextcloud."
+	},
+	"actionTitle": {
+		"message": "Clip to Curio"
+	},
+	"menuClip": {
+		"message": "Clip to Curio"
+	},
+	"commandClip": {
+		"message": "Clip the current page to Curio"
+	}
+}

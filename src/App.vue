@@ -599,6 +599,7 @@
 						<label>{{ tr('Help') }}</label>
 						<div style="display:flex;gap:8px;flex-wrap:wrap">
 							<button class="btn" @click="openTour(0)">{{ tr('Show the tour again') }}</button>
+							<button v-if="!isPhone" class="btn" @click="openTour(tourSteps.findIndex(s => s.k === 'clipper'))"><span v-html="icon('browser', 15)" />{{ tr('Get the browser clipper') }}</button>
 							<button v-if="!inAndroidApp" class="btn" @click="openTour(tourSteps.findIndex(s => s.k === 'app'))"><span v-html="icon('phone', 15)" />{{ tr('Get the Android app') }}</button>
 						</div>
 					</div>
@@ -635,6 +636,33 @@
 						<li><span v-html="icon('users', 17)" />{{ tr('Share a board with people on your Nextcloud, with view-only or edit access, from Manage boards in the sidebar, and comment on references to discuss them.') }}</li>
 						<li v-if="!isPhone"><span v-html="icon('folder', 17)" />{{ tr('Export or import a board as CSV from Settings.') }}</li>
 					</ul>
+					<template v-else-if="tourSteps[tourStep].k === 'clipper'">
+						<p class="tour-lead">{{ tr('The Curio Web Clipper adds a button to your browser that sends the page, post, image or video you are looking at to a board, with the title, caption, picture and place read for you. On Instagram, Pinterest, TikTok and X it reads posts as you see them when you are signed in.') }}</p>
+						<div class="tour-app-actions tour-clipper-actions">
+							<a v-if="browserKind === 'firefox'" class="btn primary" :href="clipperFirefoxUrl" rel="noopener"><span v-html="icon('browser', 16)" />{{ tr('Add to Firefox') }}</a>
+							<a v-else-if="browserKind === 'chromium' && clipperChromeStoreUrl" class="btn primary" :href="clipperChromeStoreUrl" target="_blank" rel="noopener"><span v-html="icon('browser', 16)" />{{ tr('Add to {browser}', { browser: browserName }) }}</a>
+							<a v-else-if="browserKind === 'chromium'" class="btn primary" :href="clipperChromeZipUrl" rel="noopener"><span v-html="icon('browser', 16)" />{{ tr('Download for {browser}', { browser: browserName }) }}</a>
+							<p v-else class="hint">{{ tr('The clipper works in Firefox, Chrome, Edge, Brave and Opera.') }}</p>
+							<a class="hint" :href="appReleasesUrl" target="_blank" rel="noopener">{{ tr('Other browsers, all versions and release notes') }}</a>
+						</div>
+						<details class="tour-install" open>
+							<summary>{{ tr('How to install it') }}</summary>
+							<ol>
+								<li v-if="browserKind === 'firefox'">{{ tr('Click Add to Firefox, then Add when Firefox asks. If Firefox only downloads the file, open it from the downloads button in the toolbar.') }}</li>
+								<li v-else-if="browserKind === 'chromium' && clipperChromeStoreUrl">{{ tr('On the Chrome Web Store page, click the button to add the clipper.') }}</li>
+								<template v-else-if="browserKind === 'chromium'">
+									<li>{{ tr('Download the clipper and unzip it into a folder you keep.') }}</li>
+									<li>{{ tr('Open {page}, turn on Developer mode and click Load unpacked.', { page: extensionsPage }) }}</li>
+									<li>{{ tr('Choose the unzipped folder.') }}</li>
+								</template>
+								<li>{{ tr('Pin the Curio button: open the extensions menu (the puzzle piece) and pin Curio Web Clipper.') }}</li>
+								<li>
+									{{ tr('The clipper opens its settings. Sign in with your Nextcloud server address:') }}
+									<span class="tour-addr"><code>{{ serverAddress }}</code><button class="btn tour-copy" @click="copyServerAddress"><span v-html="icon(addrCopied ? 'check' : 'copy', 14)" />{{ addrCopied ? tr('Copied') : tr('Copy') }}</button></span>
+								</li>
+							</ol>
+						</details>
+					</template>
 					<template v-else-if="tourSteps[tourStep].k === 'app'">
 						<p class="tour-lead">{{ tr('Curio for Android opens your boards on your phone and adds "Add to Curio" to the share menu of Instagram, Pinterest, TikTok, YouTube and any app, with the title, caption, picture and place read for you.') }}</p>
 						<div class="tour-app">
@@ -746,6 +774,12 @@ const api = (p) => generateUrl('/apps/curio/api' + p)
 // Curio for Android: the APK attached to the latest GitHub release.
 const APP_APK_URL = 'https://github.com/Acknar/Curio/releases/latest/download/curio-android.apk'
 const APP_RELEASES_URL = 'https://github.com/Acknar/Curio/releases/latest'
+// Curio Web Clipper: the Firefox package signed by Mozilla and the Chrome package,
+// attached to the latest GitHub release. Set the store address once the clipper is
+// listed on the Chrome Web Store; until then Chrome users load the unpacked package.
+const CLIPPER_FIREFOX_URL = 'https://github.com/Acknar/Curio/releases/latest/download/curio-webclipper-firefox.xpi'
+const CLIPPER_CHROME_ZIP_URL = 'https://github.com/Acknar/Curio/releases/latest/download/curio-webclipper-chrome.zip'
+const CLIPPER_CHROME_STORE_URL = ''
 const rnd = () => PALETTE[Math.floor(Math.random() * PALETTE.length)]
 
 export default {
@@ -789,6 +823,7 @@ export default {
 			mapKey: '', mapCanEdit: false, mapKeyInput: '', mapKeyBusy: false, mapKeyMsg: '', mapLoadError: false,
 			tourOpen: false, tourStep: 0, onboardingDone: true, addrCopied: false,
 			appApkUrl: APP_APK_URL, appReleasesUrl: APP_RELEASES_URL,
+			clipperFirefoxUrl: CLIPPER_FIREFOX_URL, clipperChromeZipUrl: CLIPPER_CHROME_ZIP_URL, clipperChromeStoreUrl: CLIPPER_CHROME_STORE_URL,
 			inAndroidApp: typeof window.CurioAndroid !== 'undefined',
 			isAndroid: /Android/i.test(navigator.userAgent || ''),
 			toasts: [], toastSeq: 0, addWarn: false, fetched: false, dragOver: false, dragTag: null, dragOverFolder: null, boardPickerOpen: false,
@@ -804,11 +839,30 @@ export default {
 				{ k: 'welcome', icon: 'sparkle', title: this.tr('Welcome to Curio') },
 				{ k: 'add', icon: 'image', title: this.tr('Add references') },
 				{ k: 'organize', icon: 'tag', title: this.tr('Organize and share') },
+				{ k: 'clipper', icon: 'browser', title: this.tr('Curio in your browser') },
 				{ k: 'app', icon: 'phone', title: this.tr('Curio on your phone') },
 			]
 			// The Android app shows its own introduction (with the welcome) first, and
 			// offering the app inside the app is pointless.
-			return this.inAndroidApp ? steps.filter(s => s.k !== 'welcome' && s.k !== 'app') : steps
+			if (this.inAndroidApp) return steps.filter(s => s.k !== 'welcome' && s.k !== 'app' && s.k !== 'clipper')
+			// The browser clipper is for computers.
+			return this.isPhone ? steps.filter(s => s.k !== 'clipper') : steps
+		},
+		browserKind() {
+			const ua = navigator.userAgent || ''
+			if (/Firefox\//.test(ua)) return 'firefox'
+			if (/Chrome\/|Chromium\/|Edg\//.test(ua)) return 'chromium'
+			return 'other'
+		},
+		browserName() {
+			const ua = navigator.userAgent || ''
+			if (/Edg\//.test(ua)) return 'Edge'
+			if (/OPR\//.test(ua)) return 'Opera'
+			if (navigator.brave) return 'Brave'
+			return 'Chrome'
+		},
+		extensionsPage() {
+			return { Edge: 'edge://extensions', Opera: 'opera://extensions', Brave: 'brave://extensions' }[this.browserName] || 'chrome://extensions'
 		},
 		logoSvg() {
 			return '<svg viewBox="0 0 256 256" aria-hidden="true"><g fill="currentColor"><rect x="25" y="25" width="96" height="124" rx="18"/><rect x="25" y="163" width="96" height="68" rx="18"/><rect x="135" y="25" width="96" height="68" rx="18"/><rect x="135" y="107" width="96" height="124" rx="18"/></g></svg>'

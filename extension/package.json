@@ -1,0 +1,15 @@
+{
+	"name": "curio-webclipper",
+	"version": "1.2.0",
+	"description": "Curio Web Clipper for Firefox and Chrome",
+	"private": true,
+	"license": "AGPL-3.0-or-later",
+	"scripts": {
+		"build": "node build.mjs",
+		"test": "node build.mjs chrome && node --test tests/*.test.js"
+	},
+	"devDependencies": {
+		"jsdom": "^24.1.0",
+		"webextension-polyfill": "0.12.0"
+	}
+}

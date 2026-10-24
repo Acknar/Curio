@@ -1,0 +1,111 @@
+name: Web clipper
+
+# Builds the Curio Web Clipper for Firefox and Chrome (extension/), runs its tests
+# and Mozilla's linter, and uploads both packages as the artifact
+# curio-webclipper. With the AMO_JWT_ISSUER and AMO_JWT_SECRET secrets (API keys
+# from addons.mozilla.org), a release also gets the Firefox package signed by
+# Mozilla for self-distribution: an .xpi that installs permanently in Firefox.
+# Called by release.yml to attach the packages to a Curio release.
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'extension/**'
+      - 'android/app/src/main/assets/ui/**'
+      - 'src/styles.css'
+      - 'l10n/**'
+      - '.github/workflows/extension.yml'
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      release_tag:
+        type: string
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extension
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Test
+        run: npm test
+
+      - name: Build for Firefox and Chrome
+        run: |
+          node build.mjs
+          echo "VERSION=$(node -p "require('./src/manifest.json').version")" >> "$GITHUB_ENV"
+          ls -la dist
+
+      - name: Lint the Firefox package
+        run: npx --yes web-ext@8 lint --source-dir dist/firefox --self-hosted
+
+      # Mozilla signs each version once. A release whose clipper version was signed
+      # for an earlier release reuses that .xpi; pushes are not signed.
+      - name: Sign the Firefox package (self-distributed)
+        if: ${{ inputs.release_tag }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: |
+          xpi="curio-webclipper-$VERSION-firefox.xpi"
+          for tag in $(gh release list --repo "$GITHUB_REPOSITORY" --limit 30 --json tagName -q '.[].tagName'); do
+            if gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$xpi" --dir dist 2>/dev/null; then
+              echo "Reusing $xpi signed for $tag."
+              exit 0
+            fi
+          done
+          if [ -z "$AMO_JWT_ISSUER" ] || [ -z "$AMO_JWT_SECRET" ]; then
+            echo "No AMO_JWT_ISSUER / AMO_JWT_SECRET secrets: the Firefox package is not signed."
+            exit 0
+          fi
+          npx --yes web-ext@8 sign --channel=unlisted --source-dir dist/firefox --artifacts-dir dist/signed \
+            --api-key "$AMO_JWT_ISSUER" --api-secret "$AMO_JWT_SECRET" --timeout 900000
+          cp "$(ls dist/signed/*.xpi | head -1)" "dist/$xpi"
+          echo "Signed $xpi."
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: curio-webclipper
+          path: |
+            extension/dist/*.zip
+            extension/dist/*.xpi
+          if-no-files-found: error
+
+      # Stable names behind the releases/latest/download/... links in Curio's tour.
+      - name: Stable names for the latest-release links
+        if: ${{ inputs.release_tag }}
+        run: |
+          cp "dist/curio-webclipper-$VERSION-chrome.zip" dist/curio-webclipper-chrome.zip
+          cp "dist/curio-webclipper-$VERSION-firefox.zip" dist/curio-webclipper-firefox.zip
+          if [ -f "dist/curio-webclipper-$VERSION-firefox.xpi" ]; then
+            cp "dist/curio-webclipper-$VERSION-firefox.xpi" dist/curio-webclipper-firefox.xpi
+          fi
+          ls -la dist
+
+      - name: Attach to the Curio release
+        if: ${{ inputs.release_tag }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag }}
+          files: |
+            extension/dist/*.zip
+            extension/dist/*.xpi
