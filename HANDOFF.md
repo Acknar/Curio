@@ -43,11 +43,15 @@ Done, released as Curio 2.2.0 with clipper 1.2.0:
 - CI: `.github/workflows/extension.yml` (push on `extension/**`, the Android UI assets, `src/styles.css`, `l10n/**`; artifact `curio-webclipper`), called by `release.yml` (job `webclipper`) to attach `curio-webclipper-<v>-firefox.zip`, `-chrome.zip`, stable `curio-webclipper-chrome.zip`, `curio-webclipper-firefox.zip` and, when the repository secrets `AMO_JWT_ISSUER`/`AMO_JWT_SECRET` exist, the Mozilla-signed `curio-webclipper-<v>-firefox.xpi` and `curio-webclipper-firefox.xpi`. Each clipper version is signed once; later releases reuse the .xpi from an earlier release.
 - Curio tour (`src/App.vue`): on a computer, step "Curio in your browser" before "Curio on your phone": Add to Firefox (`releases/latest/download/curio-webclipper-firefox.xpi`), or Download for Chrome/Edge/Brave/Opera (`curio-webclipper-chrome.zip`) with Load unpacked steps, then pin the button and sign in with the server address. `CLIPPER_CHROME_STORE_URL` in `App.vue` is empty until the clipper is on the Chrome Web Store. Settings > Help > Get the browser clipper. New strings in the 6 `l10n/*.json` and `*.js`; `js/curio-main.js` rebuilt.
 
+18. "extensions webclipper has trouble downloading the right video. It works as expected on android app and for photos on both"
+    Cause: `page-extractors.js` `igVideoUrl` fell back to the first .mp4 found in any script on the page (another reel in the Reels feed or the SPA's first-loaded reel, or a video-only DASH URL), and `igPostRef` preferred the first reel link on the page over the address bar. In the extension that DOM value was used whenever Instagram's API call from the clip window (extension origin) failed. Fixed: `igVideoUrl` parses the page's JSON and only takes `video_versions`/`video_url` of the object whose `code` is the post's; `igPostRef` order is clicked link, address bar, root link; the clipper asks Instagram's API through the Instagram tab (`content.js` `curio-ig-media`, same-origin fetch with cookies and the `csrftoken`, `content.fetch` in Firefox), the window's request is the fallback (`clip-ext.js` wraps `Extract.igApi`; the clip payload carries `tabId`). Tests: `extension/tests/extractors.test.js` (fails on the old extractor), a clip test for the tab route; checked in Chromium with a fake Instagram (route-mocked). Clipper 1.2.1, Android 1.2.2 (`versionCode` 5), both "Unreleased" in their changelogs; not tested against live Instagram.
+
 Next steps:
 
-1. Check the release's signing step produced `curio-webclipper-firefox.xpi`; the clipper's next change needs a version bump in `extension/src/manifest.json` and `extension/package.json` to be signed again.
-2. Optional: Chrome Web Store listing (steps in `extension/README.md`), then set `CLIPPER_CHROME_STORE_URL`.
-3. Test the clipper in a real Firefox and on the user's server.
+1. Release the fix when the user agrees (Curio 2.2.1: bump `appinfo/info.xml`, `package.json`, `package-lock.json`, `ClipController`, changelog dates); the clipper 1.2.1 gets signed then.
+2. Check the release's signing step produced `curio-webclipper-firefox.xpi`; the clipper's next change needs a version bump in `extension/src/manifest.json` and `extension/package.json` to be signed again.
+3. Optional: Chrome Web Store listing (steps in `extension/README.md`), then set `CLIPPER_CHROME_STORE_URL`.
+4. Test the clipper in a real Firefox and on the user's server.
 
 ## Done in 2.1.0 / Android 1.2.0 (requests 9 and 10)
 

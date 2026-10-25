@@ -71,7 +71,7 @@ function fakeFetch(routes, rec) {
 	};
 }
 
-function fakeBrowser(store, session, rec) {
+function fakeBrowser(store, session, rec, tab) {
 	return {
 		runtime: {
 			id: 'test',
@@ -94,6 +94,7 @@ function fakeBrowser(store, session, rec) {
 			create: async (o) => { rec.tabs.push(o.url); return { id: 99 }; },
 			remove: async (id) => { rec.closedTabs.push(id); },
 			getCurrent: async () => ({ id: 1 }),
+			sendMessage: async (id, msg) => { rec.tabMessages.push({ id: id, msg: msg }); return tab ? tab(msg) : null; },
 			update: async () => ({}),
 		},
 		permissions: { contains: async () => true, request: async () => true },
@@ -111,8 +112,8 @@ async function waitFor(fn, ms = 4000) {
 }
 
 // Open ui/<page> of the built extension. `clip` is what the content script read.
-async function openPage(page, { clip, routes, fetchMeta, config, query }) {
-	const rec = { refs: [], uploads: [], detect: [], requests: [], tabs: [], closedTabs: [], auth: '', closed: false, optionsOpened: false };
+async function openPage(page, { clip, routes, fetchMeta, config, query, tab }) {
+	const rec = { refs: [], uploads: [], detect: [], requests: [], tabs: [], closedTabs: [], tabMessages: [], auth: '', closed: false, optionsOpened: false };
 	const store = Object.assign({}, config === undefined ? { server: SERVER, user: 'tom', appPassword: 'aaaaa-bbbbb', defaultBoardId: 7 } : config);
 	const session = { 'clip-1': clip };
 	const file = path.join(DIST, 'ui', page);
@@ -123,7 +124,7 @@ async function openPage(page, { clip, routes, fetchMeta, config, query }) {
 		pretendToBeVisual: true,
 		beforeParse(window) {
 			window.chrome = { runtime: { id: 'test' } };
-			window.browser = fakeBrowser(store, session, rec);
+			window.browser = fakeBrowser(store, session, rec, tab);
 			window.fetch = fakeFetch([...curioRoutes(rec, fetchMeta), ...(routes || [])], rec);
 			window.TextDecoder = TextDecoder;
 			window.TextEncoder = TextEncoder;

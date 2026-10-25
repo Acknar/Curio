@@ -4,6 +4,12 @@ All notable changes to the Curio Web Clipper are documented here. The project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Versions
 1.0.0 to 1.1.0 were Firefox-only and kept outside this repository.
 
+## 1.2.1 - Unreleased
+
+### Fixed
+
+- Instagram reels: the video stored is the reel you clipped. Instagram's API is now asked from the Instagram tab itself, with your sign-in, as Instagram's own page asks it; asked from the clip window it could be refused. The page's own data is only used for the reel it belongs to, where it used to fall back to the first video found on the page (another reel in the Reels feed, or a video-only stream without sound). In the Reels viewer, the reel playing (the one in the address bar) is clipped, not the first reel linked on the page.
+
 ## 1.2.0 - 2026-10-24
 
 ### Added

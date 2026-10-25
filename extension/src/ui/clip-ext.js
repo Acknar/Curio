@@ -7,14 +7,14 @@
 // to use both:
 //   - a selection becomes a note, a PDF stays a PDF;
 //   - on Instagram, Pinterest, TikTok, X, Reddit, YouTube, Vimeo, Facebook and
-//     Threads, the app's network chain runs first (Instagram's API with the
-//     browser's sign-in, Pinterest's widget API, TikTok's page data...) and the
-//     page read in the tab fills whatever it left out;
+//     Threads, the app's network chain runs first (Instagram's API asked from the
+//     Instagram tab, Pinterest's widget API, TikTok's page data...) and the page
+//     read in the tab fills whatever it left out;
 //   - any other website: the page read in the tab, then Curio's server fetch;
 //   - a right-clicked link to another page is read like a link shared on a phone;
 //   - a right-clicked or Ctrl+clicked image is the image imported.
 
-/* global Look, Extract, CURIO, ExtBridge */
+/* global browser, Look, Extract, CURIO, ExtBridge */
 (function () {
 	const PLATFORMS = ['instagram', 'pinterest', 'tiktok', 'x', 'reddit', 'youtube', 'vimeo', 'facebook', 'threads'];
 
@@ -29,6 +29,21 @@
 	Look.tr = (text, vars) => tr(WORDING[text] || text, vars);
 
 	const netRun = Extract.run.bind(Extract);
+
+	// Instagram's API through the tab the clip came from (content.js), which asks
+	// as the Instagram page itself; the clip window's own request is the fallback.
+	const apiFromWindow = Extract.igApi.bind(Extract);
+	Extract.igApi = async function (code, referer) {
+		const tabId = ExtBridge.clip && ExtBridge.clip.tabId;
+		const pk = this.igPk(code);
+		if (tabId != null && pk) {
+			try {
+				const item = await browser.tabs.sendMessage(tabId, { type: 'curio-ig-media', pk: pk, appId: this.IG_APP_ID });
+				if (item) return item;
+			} catch (e) { /* tab closed or no longer on Instagram */ }
+		}
+		return apiFromWindow(code, referer);
+	};
 
 	Extract.run = async function (share) {
 		const dom = share && share.dom;

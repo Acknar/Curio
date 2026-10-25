@@ -5,11 +5,13 @@
 // The page itself is read by page-extractors.js (CurioExtract), the same file Curio
 // for Android runs in its hidden WebView.
 
-/* global browser, CurioExtract */
+/* global browser, content, CurioExtract */
 (function () {
-	// Injected twice (manifest + injectExistingTabs after an update): keep one listener.
-	if (window.__curioClipper) return;
-	window.__curioClipper = true;
+	// Injected twice (manifest + injectExistingTabs after an update): keep one set of
+	// listeners per version of the clipper.
+	const version = browser.runtime.getManifest().version;
+	if (window.__curioClipper === version) return;
+	window.__curioClipper = version;
 
 	let cfg = { hotkeyEnabled: true, hotkeyMod: 'ctrl' };
 
@@ -79,9 +81,31 @@
 		browser.runtime.sendMessage({ type: 'curio-clip', data: read(info) }).catch(() => {});
 	}, true);
 
+	// Instagram's own API for one post, asked from the Instagram tab the way the site
+	// asks it: same origin, the signed-in cookies and the page's CSRF token. From
+	// the clip window, a separate origin, Instagram can refuse the same request.
+	async function igMedia(pk, appId) {
+		if (!/(^|\.)instagram\.com$/.test(location.hostname) || !/^\d+$/.test(String(pk))) return null;
+		// Firefox runs a content script's fetch as the extension; content.fetch is the page's.
+		const pageFetch = (typeof content !== 'undefined' && content && content.fetch) ? content.fetch.bind(content) : fetch;
+		const csrf = (document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/) || [])[1] || '';
+		try {
+			const res = await pageFetch('/api/v1/media/' + pk + '/info/', {
+				credentials: 'include',
+				headers: { 'X-IG-App-ID': String(appId || ''), 'X-ASBD-ID': '129477', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrf, 'Accept': '*/*' },
+			});
+			if (!res.ok) return null;
+			const data = JSON.parse(await res.text());
+			return data && Array.isArray(data.items) && data.items[0] ? data.items[0] : null;
+		} catch (err) {
+			return null;
+		}
+	}
+
 	browser.runtime.onMessage.addListener((msg) => {
 		if (msg && msg.type === 'curio-get-page') {
 			try { return Promise.resolve(read(msg.info || {})); } catch (err) { return Promise.resolve(null); }
 		}
+		if (msg && msg.type === 'curio-ig-media') return igMedia(msg.pk, msg.appId);
 	});
 })();

@@ -104,6 +104,7 @@ async function clip(info, tab) {
 	let data = tab && tab.id != null ? await extractViaTab(tab.id, info) : null;
 	if (!data) data = payloadFromInfo(info, tab);
 	data.ctx = data.ctx || clipContext(info);
+	if (tab && tab.id != null) data.tabId = tab.id;
 	await openClipper(data);
 }
 
@@ -136,6 +137,9 @@ if (browser.commands && browser.commands.onCommand) {
 	});
 }
 
-browser.runtime.onMessage.addListener((msg) => {
-	if (msg && msg.type === 'curio-clip' && msg.data) openClipper(msg.data);
+browser.runtime.onMessage.addListener((msg, sender) => {
+	if (msg && msg.type === 'curio-clip' && msg.data) {
+		if (sender && sender.tab && sender.tab.id != null) msg.data.tabId = sender.tab.id;
+		openClipper(msg.data);
+	}
 });

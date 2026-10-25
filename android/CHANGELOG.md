@@ -3,6 +3,12 @@
 All notable changes to Curio for Android are documented here. The project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.2.2 - Unreleased
+
+### Fixed
+
+- Instagram, when a post is read from the rendered page (the last fallback): only the video belonging to that post is taken, never the first video found on the page, and the post is the one in the page's address.
+
 ## 1.2.1 - 2026-10-23
 
 ### Changed

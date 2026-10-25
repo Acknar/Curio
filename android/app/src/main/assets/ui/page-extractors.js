@@ -110,15 +110,17 @@ const CurioExtract = {
 		return document.querySelector('article') || document.body;
 	},
 
-	// Post kind + shortcode from the clicked link, the post's own permalink, or the URL.
+	// Post kind + shortcode from the clicked link, the page's own address (a post
+	// page, an open post, the reel playing in the Reels viewer), or the first post
+	// link in the scoped root (a post in the home feed).
 	igPostRef(info, root) {
 		const cands = [];
 		if (info && info.linkUrl) cands.push(info.linkUrl);
+		cands.push(location.href);
 		if (root && root.querySelector) {
 			const a = root.querySelector('a[href*="/p/"], a[href*="/reel/"], a[href*="/reels/"], a[href*="/tv/"]');
 			if (a) cands.push(a.href);
 		}
-		cands.push(location.href);
 		for (const c of cands) {
 			const m = c && c.match(/\/(p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
 			if (m) return { kind: m[1].toLowerCase() === 'reels' ? 'reel' : m[1].toLowerCase(), code: m[2] };
@@ -216,31 +218,46 @@ const CurioExtract = {
 		return '';
 	},
 
-	// Best-effort: the real reel .mp4 URL, which Instagram ships inside inline JSON
-	// (video_versions / video_url). These scontent/fbcdn URLs are fetchable in the
-	// logged-in browser, so the popup can download the reel and store it in Curio.
+	// The reel's .mp4 URL, when the page ships THIS post's data inline (a post page
+	// loaded directly). Only a media object whose code is the post's shortcode
+	// counts: the page also carries other reels (the feed, suggestions, the reel
+	// first loaded in Instagram's single-page app), and a wrong video is worse than
+	// none. Reels reached by scrolling or clicking arrive by XHR and are not here.
 	igVideoUrl(ref) {
-		const texts = [];
-		document.querySelectorAll('script').forEach((s) => {
-			const t = s.textContent || '';
-			if (t.length < 40) return;
-			if (t.includes('video_versions') || t.includes('"video_url"')) texts.push(t);
-		});
-		if (!texts.length) return '';
-		const unesc = (u) => u.replace(/\\u0026/gi, '&').replace(/\\u002F/gi, '/').replace(/\\\//g, '/');
-		const collect = (text) => {
-			const out = [];
-			let m;
-			const res = [/"video_url":"(https:[^"]+?\.mp4[^"]*)"/g, /"url":"(https:[^"]+?\.mp4[^"]*)"/g];
-			for (const re of res) { while ((m = re.exec(text)) !== null) { const u = unesc(m[1]); if (/scontent|fbcdn/i.test(u)) out.push(u); } }
-			return out;
-		};
 		const code = ref && ref.code ? ref.code : '';
-		let pool = [];
-		if (code) { for (const t of texts) { if (t.includes(code)) pool = pool.concat(collect(t)); } }
-		if (!pool.length) { for (const t of texts) pool = pool.concat(collect(t)); }
-		pool = [...new Set(pool)];
-		return pool[0] || '';
+		if (!code) return '';
+		let found = '';
+		const visit = (o, depth) => {
+			if (found || !o || typeof o !== 'object' || depth > 80) return;
+			if (Array.isArray(o)) { for (const x of o) visit(x, depth + 1); return; }
+			if (o.code === code || o.shortcode === code) {
+				const v = this.igVideoOf(o);
+				if (v) { found = v; return; }
+			}
+			for (const k of Object.keys(o)) visit(o[k], depth + 1);
+		};
+		document.querySelectorAll('script').forEach((s) => {
+			if (found) return;
+			const t = s.textContent || '';
+			if (!t.includes(code) || !(t.includes('video_versions') || t.includes('"video_url"'))) return;
+			let data = null;
+			try { data = JSON.parse(t); } catch (e) {
+				// window._sharedData = {...}; and similar assignments.
+				const a = t.indexOf('{');
+				const b = t.lastIndexOf('}');
+				if (a >= 0 && b > a) { try { data = JSON.parse(t.slice(a, b + 1)); } catch (e2) { data = null; } }
+			}
+			visit(data, 0);
+		});
+		return found;
+	},
+
+	igVideoOf(o) {
+		const vv = Array.isArray(o.video_versions) ? o.video_versions : [];
+		let best = null;
+		for (const v of vv) { if (v && v.url && (!best || (v.width || 0) > (best.width || 0))) best = v; }
+		if (best) return best.url;
+		return typeof o.video_url === 'string' && /^https:/i.test(o.video_url) ? o.video_url : '';
 	},
 
 	instagram(data, info) {

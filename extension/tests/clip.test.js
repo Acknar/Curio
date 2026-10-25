@@ -112,3 +112,27 @@ test('Clip window follows Curio\'s language, with the clipper\'s own wording', a
 	assert.equal(ctx.doc.querySelector('.mhead h2').textContent, 'Ajouter une référence');
 	assert.equal(ctx.doc.getElementById('btnConnect').textContent, 'Ouvrir les paramètres du clipper');
 });
+
+test('Instagram reel: the API asked through the Instagram tab gives the reel\'s own video', async () => {
+	const reel = JSON.parse(fixture('instagram-reel-api.json')).items[0];
+	const ctx = await openClip({
+		clip: {
+			url: 'https://www.instagram.com/reel/DAbcReel01/', pageUrl: 'https://www.instagram.com/reels/DAbcReel01/', site: 'instagram',
+			title: '', description: '', image: 'https://scontent.cdninstagram.com/poster.jpg', images: ['https://scontent.cdninstagram.com/poster.jpg'],
+			video: { provider: 'instagram', id: 'DAbcReel01', embed: 'https://www.instagram.com/reel/DAbcReel01/embed' },
+			videoFileUrl: '', selection: '', kind: 'video', ctx: { target: '', link: false, selection: false }, tabId: 42,
+		},
+		fetchMeta: { type: 'link', title: 'Instagram', description: 'Log in to see photos', image: null },
+		// From the clip window's own origin, Instagram refuses the API.
+		routes: [{ match: 'https://www.instagram.com/api/v1/media/', res: { status: 403, body: '{"message":"Please wait a few minutes"}' } }],
+		tab: (msg) => (msg.type === 'curio-ig-media' ? reel : null),
+	});
+	const { doc, rec } = ctx;
+	assert.deepEqual(rec.tabMessages.map((m) => [m.id, m.msg.type, m.msg.appId]), [[42, 'curio-ig-media', '936619743392459']]);
+	assert.equal(doc.getElementById('title').value, 'Street food tour in Bangkok, part 3');
+	const ref = await submit(ctx);
+	assert.equal(ref.type, 'video');
+	assert.deepEqual(ref.video, { provider: 'file', src: 'curio-upload:vid1' });
+	assert.ok(rec.requests.some((r) => r.url === 'https://scontent.cdninstagram.com/reel_720.mp4'), 'downloads the reel\'s own video');
+	assert.equal(rec.requests.filter((r) => r.url.startsWith('https://www.instagram.com/api/')).length, 0, 'no second API request from the window');
+});
