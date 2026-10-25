@@ -4,7 +4,7 @@ All notable changes to the Curio Web Clipper are documented here. The project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Versions
 1.0.0 to 1.1.0 were Firefox-only and kept outside this repository.
 
-## 1.2.1 - Unreleased
+## 1.2.1 - 2026-10-25
 
 ### Fixed
 

@@ -39,7 +39,7 @@ Share a board with anyone on your Nextcloud, with view-only or full edit access.
 - A button in the settings lets you export or import a board as CSV of references.
 - Everything remains on your server, nothing is sent to a third party. Your references live on your server, under your control.
 	]]></description>
-	<version>2.2.0</version>
+	<version>2.2.1</version>
 	<licence>AGPL-3.0-or-later</licence>
 	<author mail="acknar75@gmail.com">Acknar</author>
 	<namespace>Curio</namespace>

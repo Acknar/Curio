@@ -3,7 +3,7 @@
 All notable changes to Curio for Android are documented here. The project
 follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 1.2.2 - Unreleased
+## 1.2.2 - 2026-10-25
 
 ### Fixed
 
